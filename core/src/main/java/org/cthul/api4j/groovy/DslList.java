@@ -8,32 +8,28 @@ import java.util.Collection;
 import java.util.List;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
-public class DslList<E> extends AbstractList<DslObject<E>> implements DslObject<List<E>> {
+public class DslList extends AbstractList<Object> implements DslObject<List<?>> {
     
     private final GroovyDsl dsl;
-    private final List<E> actual;
+    private final List<Object> actual;
     private MetaClass metaClass = InvokerHelper.getMetaClass(getClass());
 
     public DslList(GroovyDsl dsl) {
-        this(dsl, new ArrayList<E>());
+        this(dsl, new ArrayList<>());
     }
 
-    public DslList(GroovyDsl dsl, List<E> actual) {
+    public DslList(GroovyDsl dsl, List<?> actual) {
         this.dsl = dsl;
-        this.actual = actual;
+        this.actual = (List) actual;
     }
 
     @Override
-    public boolean add(DslObject<E> e) {
-        return actual.add(e.__object());
-    }
-    
-    public boolean addValue(E e) {
-        return actual.add(e);
+    public boolean add(Object e) {
+        return actual.add(DslUtils.unwrap(e));
     }
 
     @Override
-    public DslObject<E> get(int index) {
+    public Object get(int index) {
         return dsl.wrap(actual.get(index));
     }
 
@@ -43,16 +39,16 @@ public class DslList<E> extends AbstractList<DslObject<E>> implements DslObject<
     }
 
     @Override
-    public List<E> __object() {
+    public List<?> __object() {
         return actual;
     }
     
-    public DslList<?> all(String name, Object... args) {
+    public DslList all(String name, Object... args) {
         DslUtils.unwrapArgs(args);
-        DslList<Object> result = new DslList<>(dsl);
+        DslList result = new DslList(dsl);
         if (isEmpty()) return result;
         name = "get" + name;
-        for (E o: actual) {
+        for (Object o: actual) {
             MetaClass mc = InvokerHelper.getMetaClass(o);
             Object o2 = dsl.invokeWithExtensionsNoWrap(o, mc, name, args);
             if (o2 instanceof Collection) {

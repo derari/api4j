@@ -1,8 +1,6 @@
 package org.cthul.api4j.api;
 
 import groovy.lang.Closure;
-import java.io.File;
-import org.cthul.api4j.Api4J;
 import org.cthul.api4j.api1.Api1;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyScript;
@@ -41,7 +39,6 @@ public abstract class ApiScript extends GroovyScript {
     protected abstract ApiScript findScript(String s);
 
     public void api(String version, Closure<?> closure) {
-        Api1 api = new Api1(g);
-        DslUtils.configure(api, closure);
+        new Api1(g).configure(closure);
     }
 }

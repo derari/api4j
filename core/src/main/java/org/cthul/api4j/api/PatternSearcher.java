@@ -2,6 +2,7 @@ package org.cthul.api4j.api;
 
 import com.thoughtworks.qdox.Searcher;
 import com.thoughtworks.qdox.model.JavaClass;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,12 +56,16 @@ public class PatternSearcher implements Searcher {
 
     @Override
     public boolean eval(JavaClass cls) {
-        System.out.println(cls.getFullyQualifiedName());
         for (Pattern p: regexes) {
             if (p.matcher(cls.getFullyQualifiedName()).matches()) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(regexes);
     }
 }

@@ -22,6 +22,23 @@ public class GroovyDslTest {
             return "bar";
         }
     }
+    
+    public static class InstExt {
+        
+        private final GroovyDslTest test;
+
+        public InstExt(GroovyDslTest test) {
+            this.test = test;
+        }
+        
+        public GroovyDslTest getTest(Object any) {
+            return test;
+        }
+        
+        public GroovyDslTest test(Object any) {
+            return test;
+        }
+    }
      
     @Test
     @SuppressWarnings("unchecked")
@@ -30,11 +47,31 @@ public class GroovyDslTest {
         dsl.getExtensions().add(Ext.class);
         
         List<Foo> foos = Arrays.asList(new Foo(), new Foo());
-        DslList<Foo> gFoos = (DslList) dsl.wrap(foos);
-        DslList<Bar> gBars = (DslList) gFoos.invokeMethod("allBars", null);
-        DslList<String> gNames = (DslList) gBars.invokeMethod("eachName", null);
+        DslList gFoos = (DslList) dsl.wrap(foos);
+        DslList gBars = (DslList) gFoos.invokeMethod("allBars", null);
+        DslList gNames = (DslList) gBars.invokeMethod("eachName", null);
         
         assertThat(gBars, hasSize(4));
         assertThat(gNames, hasSize(4));
+    }
+    
+    @Test
+    public void test_instance_ext() {
+        GroovyDsl dsl = new GroovyDsl();
+        dsl.getExtensions().add(InstExt.class);
+        dsl.addGlobal(this);
+        DslObject<?> o = (DslObject) dsl.wrap(new Object());
+        Object thisTest = o.invokeMethod("getTest", null);
+        assertThat(thisTest, is((Object) this));
+    }
+    
+    @Test
+    public void test_instance_property_ext() {
+        GroovyDsl dsl = new GroovyDsl();
+        dsl.getExtensions().add(InstExt.class);
+        dsl.addGlobal(this);
+        DslObject<?> o = (DslObject) dsl.wrap(new Object());
+        Object thisTest = o.getProperty("test");
+        assertThat(thisTest, is((Object) this));
     }
 }

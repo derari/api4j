@@ -4,6 +4,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
@@ -30,6 +31,13 @@ public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
         return o;
     }
     
+    public boolean asBoolean() {
+        if (o instanceof Boolean) {
+            return ((Boolean) o).booleanValue();
+        }
+        return (boolean) methodMissing("asBoolean", null);
+    }
+    
     protected Object methodMissing(String name, Object a) {
         Object result;
         Object[] args = (Object[]) a;
@@ -38,11 +46,42 @@ public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
             result = mc.invokeMethod(o, name, args);
         } catch (MissingMethodException e) {
             try {
-                result = dsl.invokeExtensionsNoWrap(o, name, args);
+                result = dsl.invokeExtensionsNoWrap(o, mc, name, args);
             } catch (MissingMethodException e2) {
                 throw e;
             } 
         }
         return dsl.wrap(result);
+    }
+    
+    protected Object propertyMissing(String name) {
+        Object result;
+        try {
+            result = mc.getProperty(o, name);
+        } catch (MissingPropertyException e) {
+            try {
+                result = dsl.getExtensionsProperty(o, mc, name);
+            } catch (MissingMethodException e2) {
+                throw e;
+            } 
+        }
+        return dsl.wrap(result);
+    }
+
+    @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    public boolean equals(Object obj) {
+        obj = DslUtils.unwrap(obj);
+        return o.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return o.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return o.toString();
     }
 }

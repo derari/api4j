@@ -1,10 +1,9 @@
-package org.cthul.test;
-
-import org.hamcrest.Factory;
+package org.cthul.api4j.test;
 
 public class StaticTestClass2 {
     
-    @Factory
+    @AtSource
+    @AtRuntime
     public static int getGlobalNumber() {
         return 4;
     }

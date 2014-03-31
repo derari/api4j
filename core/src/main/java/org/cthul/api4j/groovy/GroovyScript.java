@@ -6,6 +6,7 @@ import groovy.util.DelegatingScript;
 import java.io.IOException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.cthul.api4j.api1.QdoxExt;
 
 public abstract class GroovyScript {
     
@@ -21,7 +22,7 @@ public abstract class GroovyScript {
     
     protected void run(Object delegatee) {
         try {
-            DelegatingScript script = getScript();         
+            DelegatingScript script = getScript();
             script.setDelegate(delegatee);
             script.run();
         } catch (CompilationFailedException | IOException ex) {
@@ -35,6 +36,7 @@ public abstract class GroovyScript {
         static final CompilerConfiguration CFG = new CompilerConfiguration();
         static {
             CFG.setScriptBaseClass(DelegatingScript.class.getName());
+            CFG.getScriptExtensions().add(QdoxExt.class.getCanonicalName());
         }
     }
 }

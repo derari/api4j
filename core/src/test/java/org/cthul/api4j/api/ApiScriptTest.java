@@ -19,7 +19,7 @@ public class ApiScriptTest {
     
     @Test
     public void testRun() {
-        Generator g = new Generator(null);
+        Generator g = new Generator(new File("target"), null);
         ApiScript script = new TestApiScript(g);
         script.run();
         assertThat(success, is(true));
@@ -34,7 +34,7 @@ public class ApiScriptTest {
         @Override
         public void api(String version, Closure<?> closure) {
             success = true;
-            super.api(version, closure);
+            //super.api(version, closure);
         }
 
         @Override

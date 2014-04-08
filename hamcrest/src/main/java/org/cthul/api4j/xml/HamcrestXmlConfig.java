@@ -48,14 +48,12 @@ public class HamcrestXmlConfig implements XmlConfiguration {
             xml.close();
             in.close();
             
-            path = GeneratorUtils.classNameForPath(path);
-            
-            Api1 api = new Api1(g);
+            Api1 api = new Api1(g, path);
             GlobalExt ge = api.dsl().getExtension(GlobalExt.class);
             List<JavaClass> qdoxClasses = ge.classes(null, classNames);
             Map<String, Object> argMap = new HashMap<>();
             Template staticDelegate = api.getTemplates().get("staticDelegate");
-            try (ClassGenerator cg = g.generateClass(api.dsl(), path)) {
+            try (ClassGenerator cg = g.generateClass(api.dsl(), api.getDefaultClassName())) {
                 for (JavaClass clazz: qdoxClasses) {
                     for (JavaMethod method: clazz.getMethods()) {
                         if (QdoxExt.hasAnnotation(method, ".Factory")) {

@@ -24,9 +24,11 @@ public class PatternSearcher implements Searcher {
                     sb.append("(.*\\.)?");
                     break;
                 case ".":
-                case "/":
                     if (m.start() == 0) sb.append("(.*\\.)?");
                     else sb.append("\\.");
+                    break;
+                case "/":
+                    if (m.start() > 0) sb.append("\\.");
                     break;
                 case "*":
                     sb.append("[^.]*");

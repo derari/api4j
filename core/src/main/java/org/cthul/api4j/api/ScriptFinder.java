@@ -42,7 +42,7 @@ public class ScriptFinder extends ObjectResolver<ApiScript, RuntimeException> {
         private final RResult result;
 
         public ResolvedScript(RResult result, Generator g) {
-            super(result.getSystemId(), g);
+            super(result.getUri(), g);
             this.result = result;
         }
 

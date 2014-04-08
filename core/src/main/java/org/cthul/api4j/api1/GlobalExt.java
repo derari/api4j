@@ -45,4 +45,8 @@ public class GlobalExt {
     public Object generateClass(Object any, GenerateTask task) throws IOException {
         return g().generateClass(api1.dsl(), task.getName(), task.getClosure());
     }
+    
+    public Object generateClass(Object any, Closure<?> c) throws IOException {
+        return g().generateClass(api1.dsl(), api1.getDefaultClassName(), c);
+    }
 }

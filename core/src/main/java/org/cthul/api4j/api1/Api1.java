@@ -4,6 +4,7 @@ import groovy.lang.Closure;
 import java.util.Arrays;
 import org.cthul.api4j.api.Generator;
 import org.cthul.api4j.api.Templates;
+import org.cthul.api4j.gen.GeneratorUtils;
 import org.cthul.api4j.groovy.DslNative;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyDsl;
@@ -13,10 +14,12 @@ public class Api1 extends DslNative {
     private final Generator g;
     private final GroovyDsl dsl;
     private final Templates templates;
+    private final String uri;
 
     @SuppressWarnings("LeakingThisInConstructor")
-    public Api1(Generator g) {
+    public Api1(Generator g, String uri) {
         this.g = g;
+        this.uri = uri;
         dsl = new GroovyDsl();
         dsl.addGlobals(g, dsl, this);
         dsl.getExtensions().addAll(Arrays.asList(
@@ -59,6 +62,10 @@ public class Api1 extends DslNative {
 
     public Templates getTemplates() {
         return templates;
+    }
+    
+    public String getDefaultClassName() {
+        return GeneratorUtils.classNameForPath(uri);
     }
     
     @Override

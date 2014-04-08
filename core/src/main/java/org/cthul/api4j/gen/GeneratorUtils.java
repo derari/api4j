@@ -4,11 +4,7 @@ public class GeneratorUtils {
     
     public static String classNameForPath(String path) {
         int i = path.indexOf('.');
-        if (i < 0) {
-            return path;
-        } else {
-            return path.substring(0, i);
-        }
+        return (i < 0 ? path : path.substring(0, i)).replace('/', '.');
     }
     
 }

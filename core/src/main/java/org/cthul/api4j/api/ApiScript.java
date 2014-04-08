@@ -39,6 +39,6 @@ public abstract class ApiScript extends GroovyScript {
     protected abstract ApiScript findScript(String s);
 
     public void api(String version, Closure<?> closure) {
-        new Api1(g).configure(closure);
+        new Api1(g, uri).configure(closure);
     }
 }

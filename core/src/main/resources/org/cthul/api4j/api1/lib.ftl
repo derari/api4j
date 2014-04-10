@@ -1,13 +1,13 @@
 <#macro full_comment method>
-    /** 
+/** 
 <#list (method.comment!"")?split("\n") as l><#if (l_has_next || l?length > 0)>
-     * ${l}
+ * ${l}
 </#if></#list>
-     *
+ *
 <#list method.tags as t>
-     * @${t.name} ${t.value}
+ * @${t.name} ${t.value}
 </#list>
-     */
+ */
 </#macro>
 <#macro parameter_string params>
 <#list params as p>${p.type.genericValue} ${p.name}<#if p_has_next>, </#if></#list></#macro>
@@ -19,3 +19,4 @@
 <@modifier_string method /><@generic_parameter_string method.typeParameters /> ${method.returnType.genericValue} ${method.name}(<@parameter_string method.parameters />)</#macro>
 <#macro modifier_string method>
 ${method.modifiers?join(" ")}</#macro>
+<#assign def_methods = methods!null != null ? methods : (method!null != null ? [method] : null) />

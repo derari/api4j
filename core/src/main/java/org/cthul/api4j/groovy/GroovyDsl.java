@@ -127,7 +127,7 @@ public class GroovyDsl {
             }
             return Signatures.invoke(ext, m, a2);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(m.toString(), e);
         }
     }   
     

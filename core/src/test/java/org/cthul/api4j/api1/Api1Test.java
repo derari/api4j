@@ -1,6 +1,5 @@
 package org.cthul.api4j.api1;
 
-import com.thoughtworks.qdox.model.JavaMethod;
 import org.cthul.api4j.api.Generator;
 import org.cthul.api4j.api.TestGenerator;
 import org.junit.Test;
@@ -9,10 +8,8 @@ public class Api1Test {
 
     @Test
     public void test_basic() {
-        JavaMethod jm = null;
-//        jm.getTypeParameters()[0].getGenericValue()
         Generator g = TestGenerator.getWithSource();
-        g.getTemplates().set("testTemplate", g.fmTemplate("testmethod.ftl"));
+//        g.getTemplates().set("testTemplate", g.fmTemplate("testmethod.ftl"));
         g.runScript("basic_test_1.api.groovy");
     }
     

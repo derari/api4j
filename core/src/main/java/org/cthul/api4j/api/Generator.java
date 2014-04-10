@@ -58,15 +58,15 @@ public class Generator {
         script.run();
     }
     
-    public void runFileTree(Path dir, String... include) throws IOException {
+    public void runFileTree(Path dir, String... include) throws Exception {
         runFileTree(dir, Arrays.asList(include), Collections.<String>emptyList());
     }
     
-    public void runFileTree(Path dir, String[] include, String[] exclude) throws IOException {
+    public void runFileTree(Path dir, String[] include, String[] exclude) throws Exception {
         runFileTree(dir, Arrays.asList(include), Arrays.asList(exclude));
     }
     
-    public void runFileTree(final Path dir, List<String> include, List<String> exclude) throws IOException {
+    public void runFileTree(final Path dir, List<String> include, List<String> exclude) throws Exception {
         final List<PathMatcher> im = toMatchers(dir.getFileSystem(), include);
         final List<PathMatcher> em = toMatchers(dir.getFileSystem(), exclude);
         DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
@@ -87,17 +87,18 @@ public class Generator {
         run(dir, dir, filter);
     }
     
-    private void run(Path root, Path current, DirectoryStream.Filter<Path> filter) throws IOException {
+    private void run(Path root, Path current, DirectoryStream.Filter<Path> filter) throws Exception {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(current, filter)) {
             for (Path file: stream) {
                 System.out.println("! " + file);
                 if (Files.isDirectory(file)) {
                     run(root, file, filter);
                 } else {
-                    file = root.relativize(file);
-                    String fileName = file.toString();
+                    Path rel = root.relativize(file);
+                    String fileName = rel.toString();
                     if (fileName.endsWith(".xml")) {
-
+                        System.out.println("Processing " + fileName);
+                        xmlLoader.load(fileName, file.toFile());
                     } else {
                         System.out.println("Running " + fileName);
                         runScript(fileName);

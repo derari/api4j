@@ -53,7 +53,10 @@ public class ClassGenerator extends FileGenerator {
         a.append("public class ");
         a.append(getSimpleName());
         a.append(" {\n");
-        super.writeBodyTo(a);
+        
+        SimpleGenerator classBody = new IndentedGenerator("    ", dsl());
+        classBody.body(getBody());
+        classBody.writeTo(a);
     }
 
     @Override

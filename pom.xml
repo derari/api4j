@@ -18,6 +18,8 @@
     <modules>
         <module>core</module>
         <module>hamcrest</module>
+        <module>maven-plugin</module>
+        <module>ittest</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

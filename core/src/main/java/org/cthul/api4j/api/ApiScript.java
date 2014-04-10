@@ -2,7 +2,6 @@ package org.cthul.api4j.api;
 
 import groovy.lang.Closure;
 import org.cthul.api4j.api1.Api1;
-import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyScript;
 
 public abstract class ApiScript extends GroovyScript {

@@ -1,2 +1,4 @@
 /core/target/
 /hamcrest/target/
+/maven-plugin/target/
+/ittest/target/

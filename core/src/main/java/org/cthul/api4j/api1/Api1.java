@@ -27,7 +27,8 @@ public class Api1 extends DslNative {
                 QdoxExt.class
                 ));
         templates = new Templates(g.getTemplates());
-        templates.set("staticDelegate", g.fmTemplate("org/cthul/api4j/api1/staticDelegate.ftl"));
+        templates.set("staticDelegator", g.fmTemplate("org/cthul/api4j/api1/staticDelegator.ftl"));
+        templates.set("delegator", g.fmTemplate("org/cthul/api4j/api1/delegator.ftl"));
     }
 
     //    public DslList<JavaClass> classes(List<String> patterns) {

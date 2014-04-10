@@ -35,7 +35,7 @@ public class GlobalExt {
     }
     
     public List<JavaClass> classes(Object any, String... patterns) {
-        return classes(Arrays.asList(patterns));
+        return classes(null, Arrays.asList(patterns));
     }
     
     public Object generateClass(Object any, String name, Closure<?> c) throws IOException {

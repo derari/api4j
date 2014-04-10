@@ -6,8 +6,6 @@ api("1.0") {
     def methods = classes(classNames).allMethods().grep { it.hasAnnotation(".Factory") }
 
     generateClass {
-        methods.each { m ->
-            write templates.staticDelegate(method: m)
-        }
+        write templates.staticDelegator(methods: methods)
     }
 }

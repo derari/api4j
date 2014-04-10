@@ -44,6 +44,11 @@ public class Templates extends Expando {
     
     protected Object methodMissing(String name, Object args) {
         Template tpl = (Template) getProperty(name);
+        if (tpl == null) {
+            throw new IllegalArgumentException(
+                    "Unknown template: " + name);
+        }
+        @SuppressWarnings("unchecked")
         Map<String, Object> map = (Map) DslUtils.unwrap(((Object[]) args)[0]);
         return tpl.generate(map);
     }

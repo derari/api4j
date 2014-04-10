@@ -10,7 +10,12 @@ public class GeneratorTest {
         
     @Test
     public void test_runFileTree() throws Exception {
-        Generator g = TestGenerator.getWithSource();
-        g.runFileTree(Paths.get("src/test/api"), "root2/**.api.groovy");
+        try {
+            Generator g = TestGenerator.getWithSource();
+            g.runFileTree(Paths.get("src/test/api"), "root2/**.api.groovy");
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            throw e;
+        }
     }
 }

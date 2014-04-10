@@ -1,22 +1,62 @@
+<#ftl strip_text = true />
+
 <#macro full_comment method>
-/** 
-<#list (method.comment!"")?split("\n") as l><#if (l_has_next || l?length > 0)>
- * ${l}
-</#if></#list>
+/**
+    <#list (method.comment!"")?split("\r\n|\n\r|\n|\r", "r") as l>
+        <#if (l_has_next || l?length > 0)>
+            <#lt> * ${l}
+        </#if>
+    </#list>
  *
-<#list method.tags as t>
- * @${t.name} ${t.value}
-</#list>
+    <#list method.tags as t>
+        <#lt> * @${t.name} ${t.value}
+    </#list>
  */
 </#macro>
+
+
 <#macro parameter_string params>
-<#list params as p>${p.type.genericValue} ${p.name}<#if p_has_next>, </#if></#list></#macro>
+    <#list params as p>
+        <#t>${p.type.genericValue} ${p.name}<#if p_has_next>, </#if>
+    </#list>
+</#macro>
+
+
 <#macro argument_string params>
-<#list params as p>${p.name}<#if p_has_next>, </#if></#list></#macro>
+    <#list params as p>
+        <#t>${p.name}<#if p_has_next>, </#if>
+    </#list>
+</#macro>
+
+
 <#macro generic_parameter_string typeVars>
-<#if (typeVars?size > 0)> <<#list typeVars as v><#assign gv = v.genericValue/>${gv?substring(1,gv?length-1)}<#if v_has_next>, </#if></#list>></#if></#macro>
+    <#if (typeVars?size > 0)>
+        <#t> <
+        <#list typeVars as v><#t>
+            <#assign gv = v.genericValue />
+            <#t>${gv?substring(1,gv?length-1)}<#if v_has_next>, </#if>
+        </#list>
+        ><#t>
+    </#if>
+</#macro>
+
+
 <#macro declaration_string method>
-<@modifier_string method /><@generic_parameter_string method.typeParameters /> ${method.returnType.genericValue} ${method.name}(<@parameter_string method.parameters />)</#macro>
+    <#t><@modifier_string method />
+    <#t><@generic_parameter_string method.typeParameters />
+    <#t> ${method.returnType.genericValue}
+    <#t> ${method.name}
+    <#t>(<@parameter_string method.parameters />)
+</#macro>
+
+
 <#macro modifier_string method>
-${method.modifiers?join(" ")}</#macro>
-<#assign def_methods = methods!null != null ? methods : (method!null != null ? [method] : null) />
+    <#t>${method.modifiers?join(" ")}
+</#macro>
+
+
+<#if methods??>
+    <#assign def_methods = methods />
+<#elseif method??>
+    <#assign def_methods = [method] />
+</#if>

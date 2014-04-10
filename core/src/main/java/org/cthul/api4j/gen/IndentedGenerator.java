@@ -36,7 +36,7 @@ public class IndentedGenerator extends SimpleGenerator {
         private final StringBuilder line = new StringBuilder();
         private final StringBuilder linebreak = new StringBuilder();
         private boolean empty = true;
-        private boolean atBreak = false;
+        private boolean atBreak = true;
         private final Appendable a;
 
         public IndentAppendable(Appendable a) {

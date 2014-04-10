@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.cthul.api4j.fm.DslObjectWrapper;
 import org.cthul.api4j.fm.FmTemplate;
 import org.cthul.api4j.fm.FmTemplateLoader;
 import org.cthul.api4j.gen.ClassGenerator;
@@ -42,6 +43,7 @@ public class Generator {
         fmConfig.setDefaultEncoding("UTF-8");
         fmConfig.setLocalizedLookup(false);
         fmConfig.addAutoInclude("org/cthul/api4j/api1/lib.ftl");
+        fmConfig.setObjectWrapper(new DslObjectWrapper());
     }
     
     public void runScript(File f) {

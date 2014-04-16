@@ -1,10 +1,12 @@
 package org.cthul.api4j.gen;
 
 import groovy.lang.Closure;
+import groovy.lang.MissingMethodException;
 import java.io.IOException;
 import org.cthul.api4j.groovy.DslNative;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyDsl;
+import org.cthul.strings.Strings;
 
 public abstract class GeneratorBase extends DslNative {
 
@@ -48,6 +50,18 @@ public abstract class GeneratorBase extends DslNative {
     public GeneratorBase post(CharSequence s) {
         getPost().append(s);
         return this;
+    }
+    
+    public GeneratorBase pre(CharSequence s, Object... args) {
+        return pre(Strings.format(s, args));
+    }
+    
+    public GeneratorBase body(CharSequence s, Object... args) {
+        return body(Strings.format(s, args));
+    }
+    
+    public GeneratorBase post(CharSequence s, Object... args) {
+        return post(Strings.format(s, args));
     }
     
     public GeneratorBase pre(SelfGenerating sg) {
@@ -105,7 +119,15 @@ public abstract class GeneratorBase extends DslNative {
     @Override
     protected Object methodMissing(String name, Object arg) {
         if (name.equals("add") || name.equals("write")) {
-            return getMetaClass().invokeMethod(this, "body", (Object[]) arg);
+            return invokeMethod("body", arg);
+        }
+        if (name.endsWith("ln")) {
+            String name2 = name.substring(0, name.length()-2);
+            try {
+                Object o = invokeMethod(name2, arg);
+                invokeMethod(name2, "\n");
+                return o;
+            } catch (MissingMethodException e) {}
         }
         return super.methodMissing(name, arg);
     }

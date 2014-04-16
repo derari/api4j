@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import static org.cthul.api4j.groovy.DslUtils.unwrapArgs;
+import static org.cthul.api4j.groovy.DslUtils.unwrapAll;
 import org.cthul.objects.instance.InstanceMap;
 import org.cthul.objects.reflection.Signatures;
 
@@ -78,7 +78,7 @@ public class GroovyDsl {
     
     public Object invokeWithExtensions(Object o, MetaClass mc, String name, Object a) {
         Object[] args = (Object[]) a;
-        DslUtils.unwrapArgs(args);
+        DslUtils.unwrapAll(args);
         Object result = invokeWithExtensionsNoWrap(o, mc, name, args);
         return wrap(result);
     }
@@ -98,7 +98,7 @@ public class GroovyDsl {
     }
     
     public Object invokeExtensions(Object o, MetaClass mc, String name, Object[] args) {
-        unwrapArgs(args);
+        unwrapAll(args);
         return wrap(invokeExtensionsNoWrap(o, mc, name, args));
     }
     

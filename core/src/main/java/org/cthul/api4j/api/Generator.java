@@ -18,7 +18,7 @@ import org.cthul.api4j.fm.DslObjectWrapper;
 import org.cthul.api4j.fm.FmTemplate;
 import org.cthul.api4j.fm.FmTemplateLoader;
 import org.cthul.api4j.gen.ClassGenerator;
-import org.cthul.api4j.groovy.DslUtils;
+import org.cthul.api4j.gen.FileGenerator;
 import org.cthul.api4j.groovy.GroovyDsl;
 import org.cthul.api4j.xml.XmlLoader;
 import org.cthul.resolve.ResourceResolver;
@@ -132,12 +132,21 @@ public class Generator {
     }
     
     public ClassGenerator generateClass(GroovyDsl dsl, String name) {
-        return new ClassGenerator(dsl, out, name);
+        return new ClassGenerator(dsl, name);
     }
     
     public Object generateClass(GroovyDsl dsl, String name, Closure<?> c) throws IOException {
-        try (ClassGenerator cg = generateClass(dsl, name)) {
-            return DslUtils.configure(dsl, cg, c);
+        ClassGenerator cg =  generateClass(dsl, name);
+        try {
+            return cg.configure(c);
+        } finally {
+            writeJavaFile(cg);
+        }
+    }
+    
+    public void writeJavaFile(ClassGenerator cg) throws IOException {
+        try (FileGenerator f = new FileGenerator(cg.getDsl(), cg.getFile(out))) {
+            f.body(cg);
         }
     }
 
@@ -148,6 +157,15 @@ public class Generator {
     public Template fmTemplate(String name) {
         try {
             return new FmTemplate(fmConfig.getTemplate(name));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public Template fm(String template) {
+        try {
+            return new FmTemplate(
+                    new freemarker.template.Template("t", template, fmConfig));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

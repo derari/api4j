@@ -6,7 +6,7 @@ api("1.0") {
     def methods = classes(classNames).allMethods().grep { it.hasAnnotation(".AtRuntime") }
 
     generateClass "example.Foo" {
-        println methods
+        
         write templates.staticDelegator(methods: methods)
     }
 }

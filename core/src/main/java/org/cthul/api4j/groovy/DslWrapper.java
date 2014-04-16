@@ -35,13 +35,14 @@ public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
         if (o instanceof Boolean) {
             return ((Boolean) o).booleanValue();
         }
-        return (boolean) methodMissing("asBoolean", null);
+        Object o = methodMissing("asBoolean", null);
+        return (boolean) DslUtils.unwrap(o);
     }
     
     protected Object methodMissing(String name, Object a) {
         Object result;
         Object[] args = (Object[]) a;
-        DslUtils.unwrapArgs(args);
+        DslUtils.unwrapAll(args);
         try {
             result = mc.invokeMethod(o, name, args);
         } catch (MissingMethodException e) {

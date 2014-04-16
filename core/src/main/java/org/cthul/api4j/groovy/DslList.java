@@ -44,7 +44,7 @@ public class DslList extends AbstractList<Object> implements DslObject<List<?>> 
     }
     
     public DslList all(String name, Object... args) {
-        DslUtils.unwrapArgs(args);
+        DslUtils.unwrapAll(args);
         DslList result = new DslList(dsl);
         if (isEmpty()) return result;
         name = "get" + name;

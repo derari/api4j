@@ -7,4 +7,10 @@ public class StaticTestClass2 {
     public static int getGlobalNumber() {
         return 4;
     }
+    
+    @AtSource
+    @AtRuntime
+    public static void doTheThing() {
+        
+    }
 }

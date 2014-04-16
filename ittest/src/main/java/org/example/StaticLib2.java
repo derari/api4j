@@ -1,6 +1,6 @@
 package org.example;
 
-public class Lib2 {
+public class StaticLib2 {
     
     @Factory
     public static int theAnswer() {

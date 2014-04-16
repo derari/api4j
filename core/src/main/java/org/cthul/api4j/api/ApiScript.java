@@ -40,4 +40,12 @@ public abstract class ApiScript extends GroovyScript {
     public void api(String version, Closure<?> closure) {
         new Api1(g, uri).configure(closure);
     }
+    
+    public Api1 api1() {
+        return new Api1(g, uri);
+    }
+    
+    public void api1(Closure<?> closure) {
+        api1().configure(closure);
+    }
 }

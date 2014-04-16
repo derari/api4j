@@ -4,10 +4,12 @@ import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
 import org.cthul.api4j.api.Template;
+import org.cthul.api4j.gen.ClassGenerator;
 import org.cthul.api4j.gen.SelfGenerating;
-import org.cthul.api4j.groovy.DslUtils;
+import org.cthul.api4j.gen.SelfGeneratingBase;
 
 public class FmTemplate implements Template {
         
@@ -38,25 +40,21 @@ public class FmTemplate implements Template {
         return new Generated(map);
     }
     
-    protected class Generated implements SelfGenerating {
+    protected class Generated extends SelfGeneratingBase {
         private final Map<String, Object> map;
 
         public Generated(Map<String, Object> map) {
-            this.map = map;
+            this.map = new HashMap<>(map);
         }
         
         @Override
         public void writeTo(Appendable a) throws IOException {
             try (AppendingWriter w = new AppendingWriter(a)) {
+                map.put("__cg", ClassGenerator.current());
                 template().process(map, w);
             } catch (TemplateException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        @Override
-        public void writeTo(StringBuilder a) {
-            DslUtils.uncheckedWriteTo(this, a);
         }
     }
     

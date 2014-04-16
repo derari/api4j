@@ -1,5 +1,6 @@
 package org.cthul.api4j.api1;
 
+import com.thoughtworks.qdox.model.JavaClass;
 import org.cthul.api4j.api.Generator;
 import org.cthul.api4j.api.TestGenerator;
 import org.junit.Test;
@@ -7,12 +8,30 @@ import org.junit.Test;
 public class Api1Test {
 
     @Test
-    public void test_basic() {
+    public void test_library() {
+        JavaClass jc;
         Generator g = TestGenerator.getWithSource();
 //        g.getTemplates().set("testTemplate", g.fmTemplate("testmethod.ftl"));
         g.runScript("basic_test_1.api.groovy");
     }
     
+    @Test
+    public void test_delegator() {
+        Generator g = TestGenerator.getWithSource();
+        g.runScript("delegator_test.api.groovy");        
+    }
+    
+    @Test
+    public void test_handle() {
+        Generator g = TestGenerator.getWithSource();
+        g.runScript("handle_test.api.groovy");        
+    }
+    
+    @Test
+    public void test_builder() {
+        Generator g = TestGenerator.getWithSource();
+        g.runScript("builder_test.api.groovy");        
+    }
     
 //abs, ancestors, 
 //byte, 

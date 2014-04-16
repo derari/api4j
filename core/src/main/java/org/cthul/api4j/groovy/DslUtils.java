@@ -7,7 +7,7 @@ import org.cthul.api4j.gen.SelfGenerating;
 
 public class DslUtils {
     
-    public static void unwrapArgs(Object[] args) {
+    public static void unwrapAll(Object[] args) {
         if (args == null) return;
         for (int i = 0; i < args.length; i++) {
             Object o = args[i];
@@ -32,6 +32,13 @@ public class DslUtils {
     }
     
     public static <T> T configure(GroovyDsl dsl, Object o, Closure<T> c) {
+        if (o instanceof ClosureConfigurable) {
+            return ((ClosureConfigurable) o).configure(c);
+        }
+        return runClosureOn(dsl, o, c);
+    }
+    
+    public static <T> T runClosureOn(GroovyDsl dsl, Object o, Closure<T> c) {
         c.setDelegate(dsl.wrap(o));
         c.setResolveStrategy(Closure.DELEGATE_FIRST);
         return c.call();

@@ -1,4 +1,4 @@
 <matchers>
-    <factory class="org.example.Lib1" />
-    <factory class="org.example.Lib2" />
+    <factory class="org.example.StaticLib1" />
+    <factory class="org.example.StaticLib2" />
 </matchers>

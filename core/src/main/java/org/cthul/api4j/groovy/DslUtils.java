@@ -1,5 +1,7 @@
 package org.cthul.api4j.groovy;
 
+import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaMethod;
 import groovy.lang.Closure;
 import java.io.IOException;
 import java.util.Map;
@@ -50,5 +52,5 @@ public class DslUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
+    }    
 }

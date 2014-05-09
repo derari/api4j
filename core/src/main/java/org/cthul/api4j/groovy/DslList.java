@@ -50,7 +50,7 @@ public class DslList extends AbstractList<Object> implements DslObject<List<?>> 
         name = "get" + name;
         for (Object o: actual) {
             MetaClass mc = InvokerHelper.getMetaClass(o);
-            Object o2 = dsl.invokeWithExtensionsNoWrap(o, mc, name, args);
+            Object o2 = dsl.invokeWithExtensionsNoUnwrap(o, mc, name, args);
             if (o2 instanceof Collection) {
                 for (Object o3: (Collection<?>) o2) {
                     result.add(dsl.wrap(o3));

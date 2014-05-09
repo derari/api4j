@@ -10,3 +10,18 @@ api("1.0") {
         write templates.staticDelegator(methods: methods)
     }
 }
+
+/*
+
+generateClass {
+
+    generateFields(
+
+    generateMethods(methods) {
+        removeParameter "handle"
+        source = templates.staticDelegator(it, arguments: ["handle": "getHandle()"])
+    }
+
+}
+
+*/

@@ -1,6 +1,6 @@
 package org.cthul.api4j.api;
 
-import com.thoughtworks.qdox.JavaDocBuilder;
+import com.thoughtworks.qdox.JavaProjectBuilder;
 import freemarker.template.Configuration;
 import groovy.lang.Closure;
 import java.io.File;
@@ -16,7 +16,7 @@ import org.cthul.resolve.ResourceResolver;
 public class Generator {
     
     private final File out;
-    private final JavaDocBuilder qdox;
+    private final JavaProjectBuilder qdox;
     private final ScriptFinder scriptFinder;
     private final Configuration fmConfig;
     private final Templates templates = new Templates();
@@ -24,7 +24,7 @@ public class Generator {
     @SuppressWarnings({"LeakingThisInConstructor", "OverridableMethodCallInConstructor"})
     public Generator(File out, ResourceResolver resolver) {
         this.out = out;
-        this.qdox = new JavaDocBuilder();
+        this.qdox = new JavaProjectBuilder();
         this.scriptFinder = new ScriptFinder(this, resolver);
         fmConfig = new Configuration();
         fmConfig.setTemplateLoader(new FmTemplateLoader(resolver));
@@ -50,7 +50,7 @@ public class Generator {
         qdox.addSourceTree(f);
     }
 
-    public JavaDocBuilder getQdox() {
+    public JavaProjectBuilder getQdox() {
         return qdox;
     }
     

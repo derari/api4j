@@ -1,18 +1,24 @@
 package org.cthul.api4j.api1;
 
 import groovy.lang.Closure;
+import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.cthul.api4j.api.Generator;
 import org.cthul.api4j.api.Templates;
+import org.cthul.api4j.gen.ClassGenerator;
+import org.cthul.api4j.gen.GeneratedClass;
 import org.cthul.api4j.groovy.DslNative;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyDsl;
 
-public class Api1 extends DslNative {
+public class Api1 extends DslNative implements AutoCloseable {
     
     private final Generator g;
     private final GroovyDsl dsl;
     private final Templates templates;
+    private final List<Closeable> closeables = new ArrayList<>();
 
     @SuppressWarnings("LeakingThisInConstructor")
     public Api1(Generator g) {
@@ -68,5 +74,28 @@ public class Api1 extends DslNative {
     
     public Object configure(Closure<?> c) {
         return DslUtils.configure(dsl(), this, c);
+    }
+    
+    public GeneratedClass generateClass(String name) {
+        ClassGenerator cg = getGenerator().generateClass(dsl(), name);
+        return new GeneratedClass(dsl(), cg, name);
+    }
+
+    @Override
+    public void close() {
+        Exception lastEx = null;
+        for (Closeable c: closeables) {
+            try {
+                c.close();
+            } catch (Exception e) {
+                if (lastEx != null) {
+                    e.addSuppressed(lastEx);
+                }
+                lastEx = e;
+            }
+        }
+        if (lastEx != null) {
+            throw new RuntimeException(lastEx);
+        }
     }
 }

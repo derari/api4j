@@ -20,19 +20,30 @@ public class Templates extends Expando {
     public void set(String name, Template template) {
         setProperty(name, template);
     }
+
+    @Override
+    public void setProperty(String property, Object newValue) {
+        super.setProperty(property, DslUtils.unwrap(newValue));
+    }
     
     private boolean guard = false;
     
     public synchronized Template get(String template) {
+        Template t = null;
         if (guard) {
-            return (Template) propertyMissing(template);
+            t = (Template) propertyMissing(template);
+        } else {
+            guard = true;
+            try {
+                t = (Template) getProperty(template);
+            } finally {
+                guard = false;
+            }
         }
-        guard = true;
-        try {
-            return (Template) getProperty(template);
-        } finally {
-            guard = false;
+        if (t == null) {
+            throw new MissingPropertyException(template, getClass());
         }
+        return t;
     }
     
     protected Object propertyMissing(String name) {
@@ -44,7 +55,12 @@ public class Templates extends Expando {
     
     protected Object methodMissing(String name, Object args) {
         Template tpl = (Template) getProperty(name);
-        Map<String, Object> map = (Map) DslUtils.unwrap(((Object[]) args)[0]);
+        if (tpl == null) {
+            throw new IllegalArgumentException(
+                    "Unknown template: " + name);
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, Object> map = (Map) DslUtils.unwrap(((Object[]) args)[0]);        
         return tpl.generate(map);
     }
 }

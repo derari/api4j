@@ -15,7 +15,6 @@ import org.cthul.api4j.api1.Api1;
 import org.cthul.api4j.api1.GlobalExt;
 import org.cthul.api4j.api1.QdoxExt;
 import org.cthul.api4j.gen.ClassGenerator;
-import org.cthul.api4j.gen.GeneratorUtils;
 
 public class HamcrestXmlConfig implements XmlConfiguration {
 
@@ -48,19 +47,18 @@ public class HamcrestXmlConfig implements XmlConfiguration {
             xml.close();
             in.close();
             
-            path = GeneratorUtils.classNameForPath(path);
-            
-            Api1 api = new Api1(g);
+            Api1 api = new Api1(g, path);
             GlobalExt ge = api.dsl().getExtension(GlobalExt.class);
             List<JavaClass> qdoxClasses = ge.classes(null, classNames);
             Map<String, Object> argMap = new HashMap<>();
-            Template staticDelegate = api.getTemplates().get("staticDelegate");
-            try (ClassGenerator cg = g.generateClass(api.dsl(), path)) {
+            Template staticDelegator = api.getTemplates().get("staticDelegator");
+            ClassGenerator cg = g.generateClass(api.dsl(), api.getDefaultClassName());
+            try (ClassGenerator.JavaFile _ = cg.generateFile(g)) {
                 for (JavaClass clazz: qdoxClasses) {
                     for (JavaMethod method: clazz.getMethods()) {
                         if (QdoxExt.hasAnnotation(method, ".Factory")) {
                             argMap.put("method", method);
-                            cg.body(staticDelegate.generate(argMap));
+                            cg.body(staticDelegator.generate(argMap));
                         }
                     }
                 }

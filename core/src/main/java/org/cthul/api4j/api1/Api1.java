@@ -1,36 +1,32 @@
 package org.cthul.api4j.api1;
 
+import org.cthul.api4j.Api4JConfiguration;
 import groovy.lang.Closure;
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.cthul.api4j.api.Api4JConfiguration;
-import org.cthul.api4j.api.Templates;
-import org.cthul.api4j.gen.ClassGenerator;
+import java.util.*;
+import org.cthul.api4j.api.*;
 import org.cthul.api4j.gen.GeneratedClass;
-import org.cthul.api4j.groovy.DslNative;
-import org.cthul.api4j.groovy.DslUtils;
-import org.cthul.api4j.groovy.GroovyDsl;
+import org.cthul.api4j.groovy.*;
 
 public class Api1 extends DslNative implements AutoCloseable {
     
-    private final Api4JConfiguration g;
+    private final ScriptContext ctx;
     private final GroovyDsl dsl;
+    private final List<AutoCloseable> closeables = new ArrayList<>();
     private final Templates templates;
-    private final List<Closeable> closeables = new ArrayList<>();
 
     @SuppressWarnings("LeakingThisInConstructor")
-    public Api1(Api4JConfiguration g) {
-        this.g = g;
+    public Api1(ScriptContext ctx) {
+        this.ctx = ctx;
+        Api4JConfiguration cfg = ctx.getConfiguration();
         dsl = new GroovyDsl();
-        dsl.addGlobals(g, dsl, this);
+        dsl.addGlobals(ctx, dsl, this);
         dsl.getExtensions().addAll(Arrays.asList(
                 GlobalExt.class,
                 QdoxExt.class
                 ));
-        templates = new Templates(g.getTemplates());
-        templates.set("staticDelegate", g.fmTemplate("org/cthul/api4j/api1/staticDelegate.ftl"));
+        templates = new Templates(ctx.getTemplates(), true);
+        templates.set("staticDelegator", cfg.fmTemplate("org/cthul/api4j/api1/staticDelegator.ftl"));
     }
 
     //    public DslList<JavaClass> classes(List<String> patterns) {
@@ -56,35 +52,59 @@ public class Api1 extends DslNative implements AutoCloseable {
                 && (args[0] instanceof Closure)) {
             return new GenerateTask(name, (Closure<?>) args[0]);
         }
-        return super.methodMissing(name, arg); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public Api4JConfiguration getGenerator() {
-        return g;
-    }
-
-    public Templates getTemplates() {
-        return templates;
+        return super.methodMissing(name, arg);
     }
     
+    public Api4JConfiguration getConfiguration() {
+        return ctx.getConfiguration();
+    }
+
     @Override
     public GroovyDsl dsl() {
         return dsl;
     }
     
     public Object configure(Closure<?> c) {
-        return DslUtils.configure(dsl(), this, c);
+        try {
+            return DslUtils.configure(dsl(), this, c);
+        } finally {
+            close();
+        }
     }
     
+//    public GeneratedClass generateClass(String name) {
+//        ClassGenerator cg = getConfiguration().generateClass(dsl(), name);
+//        return new GeneratedClass(dsl(), cg, name);
+//    }
+    
     public GeneratedClass generateClass(String name) {
-        ClassGenerator cg = getGenerator().generateClass(dsl(), name);
-        return new GeneratedClass(dsl(), cg, name);
+        GeneratedClass gc = getConfiguration().generateClass(name);
+        closeEventually(gc);
+        return gc;
+    }
+    
+    public Object generateClass(String name, Closure<?> closure) {
+        return generateClass(name).configure(dsl(), closure);
     }
 
+    public GeneratedClass generateClass() {
+        String uri = ctx.getUri();
+        int dot = uri.indexOf('.');
+        return generateClass(uri.substring(0, dot));
+    }
+    
+    public Object generateClass(Closure<?> closure) {
+        return generateClass().configure(dsl(), closure);
+    }
+
+    public void closeEventually(AutoCloseable c) {
+        closeables.add(c);
+    }
+    
     @Override
     public void close() {
         Exception lastEx = null;
-        for (Closeable c: closeables) {
+        for (AutoCloseable c: closeables) {
             try {
                 c.close();
             } catch (Exception e) {
@@ -94,6 +114,7 @@ public class Api1 extends DslNative implements AutoCloseable {
                 lastEx = e;
             }
         }
+        closeables.clear();
         if (lastEx != null) {
             throw new RuntimeException(lastEx);
         }

@@ -1,11 +1,22 @@
 package org.cthul.api4j.gen;
 
-import org.cthul.api4j.groovy.DslUtils;
+import java.io.IOException;
 
 public abstract class SelfGeneratingBase implements SelfGenerating {
 
     @Override
     public void writeTo(StringBuilder a) {
-        DslUtils.uncheckedWriteTo(this, a);
-    }    
+        try {
+            writeTo((Appendable) a);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        writeTo(sb);
+        return sb.toString();
+    }
 }

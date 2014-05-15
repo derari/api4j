@@ -9,7 +9,7 @@ import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.cthul.api4j.api.Generator;
+import org.cthul.api4j.api.Api4JConfiguration;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyDsl;
 
@@ -61,7 +61,7 @@ public class ClassGenerator extends SimpleGenerator {
         }
     }
     
-    public JavaFile generateFile(final Generator g) {
+    public JavaFile generateFile(final Api4JConfiguration g) {
         __push(this);
         return new JavaFile() {
             @Override

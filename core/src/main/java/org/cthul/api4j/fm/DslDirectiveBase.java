@@ -5,14 +5,9 @@ import com.thoughtworks.qdox.model.JavaParameter;
 import freemarker.ext.util.WrapperTemplateModel;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateSequenceModel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.cthul.api4j.groovy.DslUtils;
+import static org.cthul.api4j.fm.FmUtils.*;
 
 public abstract class DslDirectiveBase {
     
@@ -85,25 +80,13 @@ public abstract class DslDirectiveBase {
                     "Unexpected arguments: " + keys);
         }
     }
-    
-    protected <T> T getValue(Class<T> clazz, Object o) throws TemplateModelException {
-        return FmUtils.getValue(clazz, o);
-    }
-    
-    protected <T> T[] getArray(Class<? extends T[]> clazz, Object o) throws TemplateModelException {
-        return FmUtils.getArray(clazz, o);
-    }
 
-    protected <T> T getValue(Class<T> clazz, Object o, T def) throws TemplateModelException {
-        return FmUtils.getValue(clazz, o, def);
-    }
-
-    protected JavaParameter[] getParameters(Object o) throws TemplateModelException {
+    protected List<JavaParameter> getParameters(Object o) throws TemplateModelException {
         o = getValue(Object.class, o);
         if (o instanceof JavaMethod) {
             return ((JavaMethod) o).getParameters();
         }
-        return getArray(JavaParameter[].class, o);
+        return getList(JavaParameter.class, o);
     }
     
     protected String[] getStrings(Object o) throws TemplateModelException {

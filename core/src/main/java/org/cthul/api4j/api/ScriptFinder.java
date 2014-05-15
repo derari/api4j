@@ -1,24 +1,23 @@
 package org.cthul.api4j.api;
 
+import org.cthul.api4j.Api4JConfiguration;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import java.io.File;
 import java.io.IOException;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.cthul.resolve.ObjectResolver;
-import org.cthul.resolve.RResult;
-import org.cthul.resolve.ResourceResolver;
+import org.cthul.resolve.*;
 
 public class ScriptFinder extends ObjectResolver<ApiScript, RuntimeException> {
 
-    private final Generator g;
+    private final Api4JConfiguration g;
 
-    public ScriptFinder(Generator g, ResourceResolver resolver) {
+    public ScriptFinder(Api4JConfiguration g, ResourceResolver resolver) {
         super(resolver);
         this.g = g;
     }
 
-    public ScriptFinder(Generator g, ResourceResolver... resolver) {
+    public ScriptFinder(Api4JConfiguration g, ResourceResolver... resolver) {
         super(resolver);
         this.g = g;
     }
@@ -41,8 +40,8 @@ public class ScriptFinder extends ObjectResolver<ApiScript, RuntimeException> {
         
         private final RResult result;
 
-        public ResolvedScript(RResult result, Generator g) {
-            super(result.getUri(), g);
+        public ResolvedScript(RResult result, Api4JConfiguration g) {
+            super(result.getUri(), g.getRootContext().subcontext(result.getUri()));
             this.result = result;
         }
 

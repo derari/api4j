@@ -8,9 +8,11 @@ import freemarker.template.TemplateModelIterator;
 import freemarker.template.TemplateScalarModel;
 import freemarker.template.TemplateSequenceModel;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.cthul.api4j.groovy.DslUtils;
 
@@ -57,6 +59,23 @@ public class FmUtils {
         return (T) o;
     }
     
+    public static <T> List<T> getList(Class<T> clazz, Object o) throws TemplateModelException {
+        o = getValue(Object.class, o);
+        if (o == null) return null;
+        if (o instanceof TemplateSequenceModel) {
+            Object[] ary = FmUtils.toArray((TemplateSequenceModel) o);
+            DslUtils.unwrapAll(ary);
+            o = Arrays.asList(ary);
+        }
+        if (o instanceof Object[]) {
+            o = Arrays.asList((Object[]) o);
+        }
+        if (o instanceof Collection && !(o instanceof List)) {
+            o = new ArrayList<>((Collection) o);
+        }
+        return (List) o;
+    }
+
     public static <T> T[] getArray(Class<? extends T[]> clazz, Object o) throws TemplateModelException {
         o = getValue(Object.class, o);
         if (o == null) return null;

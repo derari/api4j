@@ -8,13 +8,19 @@ import org.cthul.api4j.groovy.DslUtils;
 public class Templates extends Expando {
     
     private final Templates parent;
+    private final boolean readOnly;
 
     public Templates() {
-        this(null);
+        this(null, false);
     }
 
     public Templates(Templates parent) {
+        this(parent, false);
+    }
+
+    public Templates(Templates parent, boolean readOnly) {
         this.parent = parent;
+        this.readOnly = readOnly;
     }
     
     public void set(String name, Template template) {
@@ -23,7 +29,15 @@ public class Templates extends Expando {
 
     @Override
     public void setProperty(String property, Object newValue) {
-        super.setProperty(property, DslUtils.unwrap(newValue));
+        if (readOnly) {
+            parent.setProperty(property, newValue);
+        } else {
+            super.setProperty(property, DslUtils.unwrap(newValue));
+        }
+    }
+    
+    public void force(String name, Template template) {
+        super.setProperty(name, template);
     }
     
     private boolean guard = false;

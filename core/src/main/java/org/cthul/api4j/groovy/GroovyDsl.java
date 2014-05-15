@@ -1,22 +1,12 @@
 package org.cthul.api4j.groovy;
 
-import groovy.lang.Closure;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import static org.cthul.api4j.groovy.DslUtils.unwrapAll;
+import groovy.lang.*;
+import java.lang.reflect.*;
+import java.util.*;
 import org.cthul.objects.Boxing;
 import org.cthul.objects.instance.InstanceMap;
 import org.cthul.objects.reflection.Signatures;
+import static org.cthul.api4j.groovy.DslUtils.unwrapAll;
 
 public class GroovyDsl {
     
@@ -193,6 +183,10 @@ public class GroovyDsl {
         return invokeExtensionsNoWrap(self, mc, name, new Object[0]);
     }
     
+    public Object setExtensionsProperty(Object self, MetaClass mc, String name, Object arg) {
+        return invokeExtensionsNoWrap(self, mc, name, new Object[]{arg});
+    }
+    
     /**
      * Invokes a dsl extension.
      * Does not unwrap arguments.
@@ -206,15 +200,16 @@ public class GroovyDsl {
         Object[] a2 = new Object[args.length+1];
         a2[0] = self;
         System.arraycopy(args, 0, a2, 1, args.length);
-        Method[] methods = getExtensionMethods(name);
-        Method m = Signatures.bestMethod(methods, a2);
+        Method m = findExtensionMethod(name, a2);
         if (m == null) {
             a2 = new Object[]{self, name, args};
-            methods = getExtensionMethods("methodMissing");
-            m = Signatures.bestMethod(methods, a2);
+            m = findExtensionMethod("methodMissing", args);
         }
         if (m == null) {
             return tryInvokeConfigure(self, mc, name, args);
+        }
+        if (isGlobalExtension(m)) {
+            a2 = args;
         }
         try {
             Object ext = null;
@@ -227,10 +222,13 @@ public class GroovyDsl {
         }
     }
     
-    private synchronized Method findExtensionMethod(String name, Object[] args) {
+    private Method findExtensionMethod(String name, Object[] args) {
         Method[] methods = getExtensionMethods(name);
         Class<?>[][] signatures = getExtensionSignatures(name);
-        int i = Signatures.bestm
+        boolean[] varArgs = getExtensionVarArgs(name);
+        int best = Signatures.bestMatch(signatures, varArgs, Signatures.collectArgTypes(args));
+        if (best < 0) return null;
+        return methods[best];
     }
     
     private Object tryInvokeConfigure(Object self, MetaClass mc, String name, Object[] args) {

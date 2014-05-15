@@ -1,11 +1,8 @@
 package org.cthul.api4j.groovy;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
+import groovy.lang.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 
 public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
 
@@ -35,8 +32,8 @@ public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
         if (o instanceof Boolean) {
             return ((Boolean) o).booleanValue();
         }
-        Object o = methodMissing("asBoolean", null);
-        return (boolean) DslUtils.unwrap(o);
+        Object b = methodMissing("asBoolean", null);
+        return (boolean) DslUtils.unwrap(b);
     }
     
     protected Object methodMissing(String name, Object a) {
@@ -67,6 +64,25 @@ public class DslWrapper<T> extends GroovyObjectSupport implements DslObject<T> {
             } 
         }
         return dsl.wrap(result);
+    }
+    
+    protected Object propertyMissing(String name, Object value) {
+        Object unwrap = DslUtils.unwrap(value);
+        try {
+            mc.setProperty(o, name, unwrap);
+        } catch (MissingPropertyException | GroovyCastException e) {
+            try {
+                dsl.setExtensionsProperty(o, mc, name, unwrap);
+            } catch (MissingMethodException e2) {
+                throw e;
+            }
+        }
+        return value;
+    }
+
+    @Override
+    public MetaClass getMetaClass() {
+        return super.getMetaClass();
     }
 
     @Override

@@ -7,7 +7,6 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import org.cthul.api4j.api.Template;
-import org.cthul.api4j.gen.ClassGenerator;
 import org.cthul.api4j.gen.SelfGenerating;
 import org.cthul.api4j.gen.SelfGeneratingBase;
 
@@ -50,7 +49,7 @@ public class FmTemplate implements Template {
         @Override
         public void writeTo(Appendable a) throws IOException {
             try (AppendingWriter w = new AppendingWriter(a)) {
-                map.put("__cg", ClassGenerator.current());
+//                map.put("__cg", ClassGenerator.current());
                 template().process(map, w);
             } catch (TemplateException e) {
                 throw new RuntimeException(e);

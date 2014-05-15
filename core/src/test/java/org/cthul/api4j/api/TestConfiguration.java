@@ -1,26 +1,35 @@
 package org.cthul.api4j.api;
 
+import org.cthul.api4j.Api4JConfiguration;
 import java.io.File;
-import org.cthul.resolve.ClassResourceResolver;
-import org.cthul.resolve.CompositeResolver;
-import org.cthul.resolve.FileResolver;
-import org.cthul.resolve.ResourceResolver;
+import org.cthul.resolve.*;
 
-public class TestGenerator {
-
-    public static Generator get() {
+public class TestConfiguration {
+    
+    public static File testOut() {
+        return new File("target/test-out");
+    }
+    
+    public static ResourceResolver testResolver() {
         File base = new File("src/test/api");
         ResourceResolver res = new CompositeResolver(
-                new ClassResourceResolver(Generator.class).addDomain("", "/$1"),
+                new ClassResourceResolver(Api4JConfiguration.class).addDomain("", "/$1"),
                 new FileResolver(base, base).addDomain(""));
-        Generator g = new Generator(new File("target/test-out"),res);
+        return res;
+    }
+
+    public static Api4JConfiguration get() {
+        Api4JConfiguration g = new Api4JConfiguration(testOut(), testResolver());
         return g;
     }
     
-    public static Generator getWithSource() {
-        Generator g = get();
-        g.getQdox().addSourceTree(new File("src/test/java"));
-        return g;
+    public static Api4JConfiguration addSource(Api4JConfiguration cfg) {
+        cfg.getQdox().addSourceTree(new File("src/test/java"));
+        return cfg;
+    }
+    
+    public static Api4JConfiguration getWithSource() {
+        return addSource(get());
     }
     
 }

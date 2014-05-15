@@ -9,19 +9,19 @@ import java.util.List;
 import java.util.ServiceLoader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import org.cthul.api4j.api.Generator;
+import org.cthul.api4j.Api4JConfiguration;
 
 public class XmlLoader {
     
-    private final Generator g;
+    private final Api4JConfiguration g;
     private final List<XmlConfiguration> services;
     private final XMLInputFactory xmlFactory = XMLInputFactory.newFactory();
 
-    public XmlLoader(Generator g) {
+    public XmlLoader(Api4JConfiguration g) {
         this(g, Thread.currentThread().getContextClassLoader());
     }
     
-    public XmlLoader(Generator g, ClassLoader cl) {
+    public XmlLoader(Api4JConfiguration g, ClassLoader cl) {
         this.g = g;
         services = new ArrayList<>();
         ServiceLoader<XmlConfiguration> loader = ServiceLoader.load(XmlConfiguration.class, cl);

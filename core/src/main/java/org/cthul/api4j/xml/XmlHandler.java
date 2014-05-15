@@ -1,9 +1,9 @@
 package org.cthul.api4j.xml;
 
 import java.io.InputStream;
-import org.cthul.api4j.api.Generator;
+import org.cthul.api4j.Api4JConfiguration;
 
 public interface XmlHandler {
     
-    void handle(Generator g, String path, InputStream in) throws Exception;
+    void handle(Api4JConfiguration g, String path, InputStream in) throws Exception;
 }

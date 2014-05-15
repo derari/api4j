@@ -1,8 +1,6 @@
 package org.cthul.api4j.groovy;
 
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
+import groovy.lang.*;
 
 public class DslNative extends GroovyObjectSupport implements DslObject<DslNative> {
 

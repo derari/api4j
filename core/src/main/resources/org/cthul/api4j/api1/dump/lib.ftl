@@ -4,6 +4,22 @@
 ===== Macros =====
 
 
+<#macro full_comment method>
+/**
+    <#list (method.comment!"")?split("\r\n|\n\r|\n|\r", "r") as l>
+        <#if (l_has_next || l?length > 0)>
+            <#lt> * ${l}
+        </#if>
+    </#list>
+    <#list method.tags as t>
+        <#if (t.name != "param" || !(replace_args[t.value]??))
+             && !(skip_doctags?seq_contains(t.name)) >
+            <#lt> * @${t.name} ${t.value}
+        </#if>
+    </#list>
+ */
+</#macro>
+
 
 <#assign parameter_string_ = "org.cthul.api4j.api1.ParameterStringDirective"?new(false) />
 <#macro parameter_string params replace={}>
@@ -38,6 +54,10 @@
 </#macro>
 
 
+<#assign modifier_string2 = "org.cthul.api4j.api1.ModifierStringDirective"?new() />
+<#macro modifier_string entity modifiers=[]>
+    <#t><@modifier_string2 entity=entity modifiers=modifiers />
+</#macro>
 
 <#macro optional_return method >
     <#t><#if method.returnType.genericValue != "void">return </#if>
@@ -53,6 +73,10 @@
 
 ===== Default Globals ====
 
+
+<#assign current_simple_name = __cg.simpleName />
+<#assign current_package = __cg.package />
+<#assign current_class = __cg.name />
 
 
 ===== Default Arguments =====

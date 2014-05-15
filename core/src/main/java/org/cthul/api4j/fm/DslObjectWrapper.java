@@ -1,23 +1,12 @@
 package org.cthul.api4j.fm;
 
 import freemarker.ext.util.WrapperTemplateModel;
-import freemarker.template.AdapterTemplateModel;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.ObjectWrapper;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
-import freemarker.template.TemplateScalarModel;
+import freemarker.template.*;
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaMethod;
 import groovy.lang.MissingPropertyException;
-import java.util.ArrayList;
 import java.util.List;
 import org.cthul.api4j.groovy.DslList;
 import org.cthul.api4j.groovy.DslUtils;
-import org.cthul.objects.Boxing;
-import org.cthul.objects.reflection.Signatures;
 
 public class DslObjectWrapper extends DefaultObjectWrapper {
 

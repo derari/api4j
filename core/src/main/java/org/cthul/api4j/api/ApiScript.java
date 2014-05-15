@@ -7,11 +7,11 @@ import org.cthul.api4j.groovy.GroovyScript;
 public abstract class ApiScript extends GroovyScript {
     
     private final String uri;
-    private final Generator g;
+    private final ScriptContext ctx;
 
-    public ApiScript(String uri, Generator g) {
+    public ApiScript(String uri, ScriptContext ctx) {
         this.uri = uri;
-        this.g = g;
+        this.ctx = ctx;
     }
 
     public String getUri() {
@@ -37,15 +37,15 @@ public abstract class ApiScript extends GroovyScript {
     
     protected abstract ApiScript findScript(String s);
 
-    public void api(String version, Closure<?> closure) {
-        new Api1(g, uri).configure(closure);
+    public Object api(String version, Closure<?> closure) {
+        return api1(closure);
     }
     
     public Api1 api1() {
-        return new Api1(g, uri);
+        return new Api1(ctx);
     }
     
-    public void api1(Closure<?> closure) {
-        api1().configure(closure);
+    public Object api1(Closure<?> closure) {
+        return api1().configure(closure);
     }
 }

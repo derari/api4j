@@ -1,21 +1,17 @@
 package org.cthul.api4j.api1;
 
-import org.cthul.api4j.fm.DslDirectiveBase;
 import com.thoughtworks.qdox.model.JavaParameter;
 import freemarker.core.Environment;
-import freemarker.template.TemplateDirectiveBody;
-import freemarker.template.TemplateDirectiveModel;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateMethodModelEx;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
+import freemarker.template.*;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import org.cthul.api4j.fm.DslDirectiveBase;
+import static org.cthul.api4j.fm.FmUtils.getValue;
 
 public class ParameterStringDirective extends DslDirectiveBase 
                 implements TemplateMethodModelEx, TemplateDirectiveModel {
+    
+    public static final ParameterStringDirective ARGUMENTS = new ParameterStringDirective(true);
     
     private final boolean argumentsOnly;
 
@@ -28,7 +24,7 @@ public class ParameterStringDirective extends DslDirectiveBase
         assertRequiredArgs(arguments, "params");
         assertArgumentCountLE(arguments, 2);
         
-        JavaParameter[] params = getParameters(arguments.get(0));
+        List<JavaParameter> params = getParameters(arguments.get(0));
         
         Map<String, String> replace = null;
         if (arguments.size() > 1) {
@@ -39,7 +35,7 @@ public class ParameterStringDirective extends DslDirectiveBase
 
     @Override
     public void execute(Environment env, Map params, TemplateModel[] loopVars, TemplateDirectiveBody body) throws TemplateException, IOException {
-        JavaParameter[] jparams;
+        List<JavaParameter> jparams;
         Map<String, String> replace;
 //        int i = 0;
         
@@ -59,12 +55,12 @@ public class ParameterStringDirective extends DslDirectiveBase
         env.getOut().append(build(jparams, replace));
     }
     
-    protected String build(JavaParameter[] params, Map<String, String> replace) {
+    public String build(List<JavaParameter> params, Map<String, String> replace) {
         if (params == null) {
             throw new IllegalArgumentException("Expected parameters argument");
         }
         if (replace == null) replace = Collections.emptyMap();
-        if (params.length == 0) return "";
+        if (params.isEmpty()) return "";
         StringBuilder sb = new StringBuilder();
         pm: for (JavaParameter pm: params) {
             String rep = replace.get(pm.getName());

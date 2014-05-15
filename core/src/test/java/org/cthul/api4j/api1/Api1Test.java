@@ -1,27 +1,61 @@
 package org.cthul.api4j.api1;
 
-import com.thoughtworks.qdox.model.JavaClass;
-import org.cthul.api4j.api.Api4JConfiguration;
-import org.cthul.api4j.api.TestGenerator;
-import org.cthul.api4j.gen.QdoxWriter;
-import org.cthul.api4j.gen.SimpleGenerator;
+import com.thoughtworks.qdox.model.JavaConstructor;
+import com.thoughtworks.qdox.model.impl.DefaultJavaConstructor;
+import java.io.File;
+import org.cthul.api4j.Api4JConfiguration;
+import org.cthul.api4j.api.TestConfiguration;
 import org.junit.Test;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.*;
 
 public class Api1Test {
 
-//    @Test
-//    public void test_basic() {
-//        JavaMethod jm = null;
-////        jm.getTypeParameters()[0].getGenericValue()
-//        Api4JConfiguration g = TestGenerator.getWithSource();
-//        g.getTemplates().set("testTemplate", g.fmTemplate("testmethod.ftl"));
-//        g.runScript("basic_test_1.api.groovy");
-//    }
+    private static final File root = new File("target/test-out/api1Test");
     
     @Test
-    public void test() {
-        
+    public void test_empty() {
+        Api4JConfiguration cfg = TestConfiguration.getWithSource();
+        cfg.runScript("api1Test/empty/empty.api.groovy");
     }
+    
+    private void assertFileGenerated(String script) {
+        assertFileGenerated(script, script);
+    }
+    
+    private void assertFileGenerated(String script, String file) {
+        File expectedFile = new File(root, file + ".java");
+        expectedFile.delete();
+        Api4JConfiguration cfg = TestConfiguration.getWithSource();
+        cfg.runScript("api1Test/" + script + ".api.groovy");
+        assertThat(expectedFile.exists(), is(true));        
+    }
+    
+    @Test
+    public void test_explicit_name() {
+        assertFileGenerated("empty/ExplicitName", "empty/ExplicitNameX");
+    }
+    
+    @Test
+    public void test_explicit_name2() {
+        assertFileGenerated("empty/ExplicitName2", "empty/ExplicitNameX2");
+    }
+    
+    @Test
+    public void test_implicit_name() {
+        assertFileGenerated("empty/ImplicitName");
+    }
+    
+    @Test
+    public void test_static_delegator() {
+        assertFileGenerated("fm/StaticDelegator");
+    }
+    
+    @Test
+    public void test_my_handle() {
+        assertFileGenerated("fm/MyHandle");
+    }
+}
     
 //<<<<<<< HEAD
 //    public void test_basic() {

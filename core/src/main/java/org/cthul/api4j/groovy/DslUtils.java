@@ -1,11 +1,7 @@
 package org.cthul.api4j.groovy;
 
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaMethod;
 import groovy.lang.Closure;
-import java.io.IOException;
-import java.util.Map;
-import org.cthul.api4j.gen.SelfGenerating;
+import java.util.*;
 
 public class DslUtils {
     
@@ -23,6 +19,14 @@ public class DslUtils {
         if (o instanceof DslObject) {
             o = ((DslObject<?>) o).__object();
         }
+        if (o instanceof List) {
+            ListIterator<Object> it = ((List) o).listIterator();
+            while (it.hasNext()) {
+                Object e = it.next();
+                Object e2 = unwrap(e);
+                if (e != e2) it.set(e2);
+            }
+        }
         if (o instanceof Map) {
             for (Map.Entry<Object, Object> e: ((Map<Object, Object>) o).entrySet()) {
                 Object v = e.getValue();
@@ -37,6 +41,9 @@ public class DslUtils {
         if (o instanceof ClosureConfigurable) {
             return ((ClosureConfigurable) o).configure(c);
         }
+        if (o instanceof DslConfigurable) {
+            return ((DslConfigurable) o).configure(dsl, c);
+        }
         return runClosureOn(dsl, o, c);
     }
     
@@ -44,13 +51,11 @@ public class DslUtils {
         c.setDelegate(dsl.wrap(o));
         c.setResolveStrategy(Closure.DELEGATE_FIRST);
         return c.call();
-    }
-    
-    public static void uncheckedWriteTo(SelfGenerating sg, Appendable a) {
-        try {
-            sg.writeTo(a);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }    
+    }  
+
+    public static <T> T runClosureOn(GroovyDsl dsl, Object o, Closure<T> c, Object arg) {
+        c.setDelegate(dsl.wrap(o));
+        c.setResolveStrategy(Closure.DELEGATE_FIRST);
+        return c.call(dsl.wrap(arg));
+    }  
 }

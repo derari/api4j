@@ -10,14 +10,19 @@ import org.cthul.api4j.api1.QdoxExt;
 
 public abstract class GroovyScript {
     
+    private DelegatingScript cachedScript = null;
+    
     protected CompilerConfiguration getCompilerConfiguration() {
         return DefaultConfig.CFG;
     }
     
-    private DelegatingScript getScript() throws CompilationFailedException, IOException {
-        CompilerConfiguration cfg = getCompilerConfiguration();
-        GroovyShell shell = new GroovyShell(cfg);
-        return (DelegatingScript) parseScript(shell);
+    private synchronized DelegatingScript getScript() throws CompilationFailedException, IOException {
+        if (cachedScript == null) {
+            CompilerConfiguration cfg = getCompilerConfiguration();
+            GroovyShell shell = new GroovyShell(cfg);
+            cachedScript = (DelegatingScript) parseScript(shell);
+        }
+        return cachedScript;
     }
     
     protected void run(Object delegatee) {

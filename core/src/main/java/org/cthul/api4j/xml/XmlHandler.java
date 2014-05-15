@@ -5,5 +5,5 @@ import org.cthul.api4j.Api4JConfiguration;
 
 public interface XmlHandler {
     
-    void handle(Api4JConfiguration g, String path, InputStream in) throws Exception;
+    void handle(Api4JConfiguration cfgg, String path, InputStream in) throws Exception;
 }

@@ -11,13 +11,14 @@ import static org.cthul.api4j.groovy.DslUtils.unwrapAll;
 public class GroovyDsl {
     
     private final Set<Class<?>> extensions = new HashSet<>();
+    private final Set<Class<?>> globalExtensions = new HashSet<>();
     private final InstanceMap instances = new InstanceMap();
     private final Map<String, Method[]> extensionMethods = new HashMap<>();
     private final Map<String, Class<?>[][]> extensionSignatures = new HashMap<>();
     private final Map<String, boolean[]> extensionVarArgs = new HashMap<>();
     
     private final Map<Method, Class<?>> declaringClasses = new HashMap<>();
-    private final Set<Method> globalExtensions = new HashSet<>();
+    private final Set<Method> globalExtensionsMethods = new HashSet<>();
 
     public synchronized void addGlobal(Object g) {
         instances.put(g.getClass(), g);
@@ -32,12 +33,29 @@ public class GroovyDsl {
     public Set<Class<?>> getExtensions() {
         return extensions;
     }
+
+    public Set<Class<?>> getGlobalExtensions() {
+        return globalExtensions;
+    }
     
     public synchronized <T> T getExtension(Class<T> clazz) {
         if (extensions.add(clazz)) {
             extensionMethods.clear();
             extensionSignatures.clear();
             extensionVarArgs.clear();
+            declaringClasses.clear();
+            globalExtensionsMethods.clear();
+        }
+        return instances.getOrCreate(clazz);
+    }
+    
+    public synchronized <T> T getGlobalExtension(Class<T> clazz) {
+        if (globalExtensions.add(clazz)) {
+            extensionMethods.clear();
+            extensionSignatures.clear();
+            extensionVarArgs.clear();
+            declaringClasses.clear();
+            globalExtensionsMethods.clear();
         }
         return instances.getOrCreate(clazz);
     }
@@ -52,7 +70,14 @@ public class GroovyDsl {
             for (Class<?> c: extensions) {
                 Method[] methods =  Signatures.collectMethods(c, name);
                 for (Method m: methods) {
-                    analyzeExtensionMethod(c, m, signatures, varArgs);
+                    analyzeExtensionMethod(c, m, signatures, varArgs, false);
+                }
+                list.addAll(Arrays.asList(methods));
+            }
+            for (Class<?> c: globalExtensions) {
+                Method[] methods =  Signatures.collectMethods(c, name);
+                for (Method m: methods) {
+                    analyzeExtensionMethod(c, m, signatures, varArgs, true);
                 }
                 list.addAll(Arrays.asList(methods));
             }
@@ -82,26 +107,26 @@ public class GroovyDsl {
         return result;
     }
     
-    private void analyzeExtensionMethod(Class<?> declaringClass, Method m, List<Class<?>[]> signatures, List<Boolean> varArgs) {
+    private void analyzeExtensionMethod(Class<?> declaringClass, Method m, List<Class<?>[]> signatures, List<Boolean> varArgs, boolean global) {
         if (declaringClasses.put(m, declaringClass) != null) {
             return;
         }
         Class<?>[] params = m.getParameterTypes();
         GlobalExtension ge = m.getAnnotation(GlobalExtension.class);
         if (ge == null) ge = declaringClass.getAnnotation(GlobalExtension.class);
-        if (ge != null) {
+        if (ge != null || global) {
             Class<?>[] newParams = new Class<?>[params.length + 1];
-            newParams[0] = ge.value();
+            newParams[0] = ge != null ? ge.value() : Object.class;
             System.arraycopy(params, 0, newParams, 1, params.length);
             params = newParams;
-            globalExtensions.add(m);
+            globalExtensionsMethods.add(m);
         }
         signatures.add(params);
         varArgs.add(m.isVarArgs());
     }
     
     private synchronized boolean isGlobalExtension(Method m) {
-        return globalExtensions.contains(m);
+        return globalExtensionsMethods.contains(m);
     }
     
     @SuppressWarnings("unchecked")

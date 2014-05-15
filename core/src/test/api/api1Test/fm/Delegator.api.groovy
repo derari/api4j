@@ -1,20 +1,20 @@
 api1 {
+
     def delegatees = [
-        "service": "org.example.Service<T>"]
+        "delegatee": "org.cthul.api4j.test.MyService"]
 
     generateClass {
-        typeParameters = "T"
         interfaces = delegatees.values()
         def constr = generateConstructor()
         delegatees.each { name, type ->
             constr.signature << type + " " + name
             constr.body("this.%s = %<s;%n", name)
-            def delegatee
             generateField(name, type: type) {
                 modifiers = "private final";
-                generateGetter(modifiers: "protected") { delegatee = it.name + "()" }
+                generateGetter(name: name, modifiers: "protected")
             }
             def methods = classes(type).allMethods()
+            def delegatee = name + "()"
             generateMethods(methods) { m ->
                 modifiers = "public"
                 body = templates.delegator(delegatee: delegatee, method: m)

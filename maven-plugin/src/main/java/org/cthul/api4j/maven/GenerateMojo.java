@@ -1,7 +1,6 @@
 package org.cthul.api4j.maven;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.maven.plugin.AbstractMojo;
@@ -10,7 +9,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.cthul.api4j.api.Generator;
+import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.resolve.ClassLoaderResourceResolver;
 import org.cthul.resolve.CompositeResolver;
 import org.cthul.resolve.FileResolver;
@@ -20,10 +19,10 @@ import org.cthul.resolve.ResourceResolver;
         threadSafe=true)
 public class GenerateMojo extends AbstractMojo {
     
-    @Parameter(property = "api4j.source", defaultValue = "src/main/api4j")
+    @Parameter(property = "api4j.source", defaultValue = "${basedir}/src/main/api4j")
     private String source;
     
-    @Parameter(property = "api4j.target", defaultValue = "target/generated-sources/api4j")
+    @Parameter(property = "api4j.target", defaultValue = "${project.build.directory}/generated-sources/api4j")
     private String target;
     
     @Parameter(property = "api4j.includes", defaultValue = "--default--")
@@ -40,9 +39,9 @@ public class GenerateMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        Generator g = createGenerator();
+        Api4JConfiguration cfg = createConfiguration();
         for (String src: project.getCompileSourceRoots()) {
-            g.addSourceTree(new File(src));
+            cfg.addSourceTree(new File(src));
         }
         project.addCompileSourceRoot(target);
         if (includes.length == 1 && includes[0].equals("--default--")) {
@@ -50,18 +49,18 @@ public class GenerateMojo extends AbstractMojo {
         }
         try {
             Path p = Paths.get(source);
-            g.runFileTree(p, includes, excludes);
+            cfg.runFileTree(p, includes, excludes);
         } catch (Exception e) {
             throw new MojoExecutionException("", e);
         }
     }
     
-    protected Generator createGenerator() {
+    protected Api4JConfiguration createConfiguration() {
         File base = new File(source);
         ResourceResolver res = new CompositeResolver(
                 new ClassLoaderResourceResolver().lookupAll(),
                 new FileResolver(base, base).lookupAll());
-        Generator g = new Generator(new File(target),res);
-        return g;
+        Api4JConfiguration cfg = new Api4JConfiguration(new File(target),res);
+        return cfg;
     }
 }

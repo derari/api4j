@@ -20,16 +20,15 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, D
         setModelWriterFactory(FixedModelWriter.FACTORY);
         setModifiers(new ModifierList("public"));
         int dot = name.lastIndexOf('.');
-        if (dot > 0) {
-            JavaPackage pkg = qdox.getPackageByName(name.substring(0, dot));
-            if (pkg == null) {
-                pkg = new DefaultJavaPackage(name.substring(0, dot));
-                JavaClass jcObject = qdox.getClassByName("java.lang.Object");
-                ((DefaultJavaPackage) pkg).setClassLibrary(((DefaultJavaClass) jcObject).getJavaClassLibrary());
-            }
-            setJavaPackage(pkg);
-            setName(name.substring(dot+1));
+        String pkgName = dot > 0 ? name.substring(0, dot) : "";
+        JavaPackage pkg = qdox.getPackageByName(pkgName);
+        if (pkg == null) {
+            pkg = new DefaultJavaPackage(pkgName);
+            JavaClass jcObject = qdox.getClassByName("java.lang.Object");
+            ((DefaultJavaPackage) pkg).setClassLibrary(((DefaultJavaClass) jcObject).getJavaClassLibrary());
         }
+        setJavaPackage(pkg);
+        setName(name.substring(dot+1));
     }
 
     @Override
@@ -54,4 +53,34 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, D
             new QdoxWriter(w).printJavaFile(this);
         }
     }
+    
+    
+
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public List<JavaClass> getInterfaces() {
+//        try {
+//            return (List<JavaClass>) fImplements.get(this);
+//        } catch (IllegalAccessException | IllegalArgumentException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//    
+//    private static final Field fImplements;
+//    
+//    static {
+//        try {
+//            Field fImpl = null;
+//            for (Field f: DefaultJavaClass.class.getDeclaredFields()) {
+//                if ("implementz".equals(f.getName())) {
+//                    fImpl = f;
+//                    break;
+//                }
+//            }
+//            fImpl.setAccessible(true);
+//            fImplements = fImpl;
+//        } catch (SecurityException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }

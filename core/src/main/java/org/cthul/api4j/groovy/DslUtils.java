@@ -1,7 +1,10 @@
 package org.cthul.api4j.groovy;
 
 import groovy.lang.Closure;
+import groovy.lang.MetaClass;
+import java.lang.reflect.InvocationHandler;
 import java.util.*;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 public class DslUtils {
     
@@ -50,12 +53,13 @@ public class DslUtils {
     public static <T> T runClosureOn(GroovyDsl dsl, Object o, Closure<T> c) {
         c.setDelegate(dsl.wrap(o));
         c.setResolveStrategy(Closure.DELEGATE_FIRST);
-        return c.call();
+        return c.call(dsl.wrap(o));
     }  
 
     public static <T> T runClosureOn(GroovyDsl dsl, Object o, Closure<T> c, Object arg) {
+        //System.out.println(">> " + c.getMaximumNumberOfParameters());
         c.setDelegate(dsl.wrap(o));
         c.setResolveStrategy(Closure.DELEGATE_FIRST);
         return c.call(dsl.wrap(arg));
-    }  
+    }
 }

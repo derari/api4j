@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
-import org.cthul.api4j.api.Generator;
+import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.api.Template;
 import org.cthul.api4j.api1.Api1;
 import org.cthul.api4j.api1.GlobalExt;
 import org.cthul.api4j.api1.QdoxExt;
-import org.cthul.api4j.gen.ClassGenerator;
+import org.cthul.api4j.gen.GeneratedClass;
+import org.cthul.api4j.gen.GeneratedMethod;
 
 public class HamcrestXmlConfig implements XmlConfiguration {
 
@@ -35,7 +36,7 @@ public class HamcrestXmlConfig implements XmlConfiguration {
         private final XMLInputFactory f = XMLInputFactory.newFactory();
         
         @Override
-        public void handle(Generator g, String path, InputStream in) throws Exception {
+        public void handle(Api4JConfiguration cfg, String path, InputStream in) throws Exception {
             XMLStreamReader xml = f.createXMLStreamReader(in);
             List<String> classNames = new ArrayList<>();
             while (xml.hasNext()) {
@@ -47,18 +48,20 @@ public class HamcrestXmlConfig implements XmlConfiguration {
             xml.close();
             in.close();
             
-            Api1 api = new Api1(g, path);
-            GlobalExt ge = api.dsl().getExtension(GlobalExt.class);
-            List<JavaClass> qdoxClasses = ge.classes(null, classNames);
-            Map<String, Object> argMap = new HashMap<>();
-            Template staticDelegator = api.getTemplates().get("staticDelegator");
-            ClassGenerator cg = g.generateClass(api.dsl(), api.getDefaultClassName());
-            try (ClassGenerator.JavaFile _ = cg.generateFile(g)) {
-                for (JavaClass clazz: qdoxClasses) {
-                    for (JavaMethod method: clazz.getMethods()) {
-                        if (QdoxExt.hasAnnotation(method, ".Factory")) {
-                            argMap.put("method", method);
-                            cg.body(staticDelegator.generate(argMap));
+            try (Api1 api = new Api1(cfg.getRootContext().subcontext(path))) {
+                GlobalExt ge = api.dsl().getExtension(GlobalExt.class);
+
+                List<JavaClass> qdoxClasses = ge.classes(classNames);
+                Map<String, Object> argMap = new HashMap<>();
+                Template staticDelegator = api.getTemplates().get("staticDelegator");
+
+                GeneratedClass cg = api.generateClass();
+                for (JavaClass sourceClass: qdoxClasses) {
+                    for (JavaMethod sourceMethod: sourceClass.getMethods()) {
+                        if (QdoxExt.hasAnnotation(sourceMethod, ".Factory")) {
+                            GeneratedMethod newMethod = QdoxExt.generateMethod(cg, sourceMethod);
+                            argMap.put("method", sourceMethod);
+                            QdoxExt.body(newMethod, staticDelegator.generate(argMap));
                         }
                     }
                 }

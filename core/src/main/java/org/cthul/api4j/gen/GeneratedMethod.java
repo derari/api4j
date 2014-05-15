@@ -4,6 +4,7 @@ import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.AbstractBaseMethod;
 import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import static org.cthul.api4j.gen.GeneratedModel.*;
@@ -12,16 +13,19 @@ public class GeneratedMethod extends DefaultJavaMethod {
 
     public GeneratedMethod() {
         setModifiers(new ModifierList());
+        setParameters(new LinkedList<JavaParameter>());
     }
 
     public GeneratedMethod(String name) {
         super(name);
         setModifiers(new ModifierList());
+        setParameters(new LinkedList<JavaParameter>());
     }
 
     public GeneratedMethod(JavaClass returns, String name) {
         super(returns, name);
         setModifiers(new ModifierList());
+        setParameters(new LinkedList<JavaParameter>());
     }
     
     @SuppressWarnings("LeakingThisInConstructor")

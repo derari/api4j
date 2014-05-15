@@ -3,9 +3,11 @@ package org.cthul.api4j.gen;
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaConstructor;
 import java.util.*;
+import static org.cthul.api4j.gen.GeneratedModel.COPY_TAG;
+import static org.cthul.api4j.gen.GeneratedModel.copyAll;
 
 public class GeneratedConstructor extends DefaultJavaConstructor {
-
+    
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public GeneratedConstructor() {
         setModifiers(new ModifierList("public"));
@@ -13,11 +15,12 @@ public class GeneratedConstructor extends DefaultJavaConstructor {
         setParameters(new LinkedList<JavaParameter>());
     }
     
-    @SuppressWarnings("OverridableMethodCallInConstructor")
-    public GeneratedConstructor(JavaMethod jm) {
+    @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
+    public GeneratedConstructor(JavaMethod source) {
         this();
-        setComment(jm.getComment());
-        setParameters(GeneratedModel.copyAll(jm.getParameters(), GeneratedModel.COPY_PARAMETER));
+        setComment(source.getComment());
+        setTags(copyAll(source.getTags(), this, COPY_TAG));
+        setParameters(GeneratedModel.copyAll(source.getParameters(), GeneratedModel.COPY_PARAMETER));
     }
 
     @Override
@@ -40,7 +43,7 @@ public class GeneratedConstructor extends DefaultJavaConstructor {
         tagList = new LinkedList<>(tagList);
         for (Iterator<DocletTag> it = tagList.iterator(); it.hasNext(); ) {
             DocletTag tag = it.next();
-            if ("returns".equals(tag.getName())) {
+            if ("return".equals(tag.getName())) {
                 it.remove();
             }
         }

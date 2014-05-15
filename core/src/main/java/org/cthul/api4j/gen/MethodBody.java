@@ -5,7 +5,7 @@ import groovy.lang.GroovyObjectSupport;
 
 public class MethodBody extends GroovyObjectSupport {
     
-    private AbstractBaseMethod m;
+    private final AbstractBaseMethod m;
 
     public MethodBody(AbstractBaseMethod m) {
         this.m = m;

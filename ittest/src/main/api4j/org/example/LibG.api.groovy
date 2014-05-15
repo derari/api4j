@@ -1,4 +1,4 @@
-api("1.0") {
+api1 {
 
     def classNames = [
         "org.example.StaticLib1",
@@ -6,6 +6,8 @@ api("1.0") {
     def methods = classes(classNames).allMethods().grep { it.hasAnnotation(".Factory") }
 
     generateClass {
-        write templates.staticDelegator(methods: methods)
+        generateMethods(methods) { m ->
+            body = templates.staticDelegator(method: m)
+        }
     }
 }

@@ -123,7 +123,7 @@ public class Api4JConfiguration {
 
     public GeneratedClass generateClass(String name) {
         File f = new File(out, name.replace('.', '/') + ".java");
-        return new GeneratedClass(getQdox(), f, name.replace('/', '.'));
+        return new GeneratedClass(getQdox(), f, name.replace('/', '.').replace('\\', '.'));
     }
     
     public Object generateClass(String name, GroovyDsl dsl, Closure<?> c) throws IOException {

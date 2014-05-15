@@ -1,5 +1,6 @@
 package org.cthul.api4j.api;
 
+import com.thoughtworks.qdox.model.JavaConstructor;
 import org.cthul.api4j.Api4JConfiguration;
 import java.io.File;
 import java.nio.file.Paths;

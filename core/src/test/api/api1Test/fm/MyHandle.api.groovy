@@ -5,9 +5,9 @@ api1 {
     def constructors = all_methods.grep { it.name == "allocate" }
     def methods = all_methods.grep { it.name != "allocate" }
 
-    generateClass {/*
+    generateClass {
         generateField("handle") {
-            modifiers = "protected final"
+            modifiers = "private final"
             type = "int"
             generateGetter(modifiers: "protected")
         }
@@ -17,10 +17,9 @@ api1 {
         }
         generateConstructors(constructors) { m ->
             body("this(%s.%s(%s));", m.declaringClass.fullyQualifiedName, m.name, m.argumentsString);
-        } */
+        }
         generateMethods(methods) { m ->
             modifiers.remove("static")
-            println modifiers
             body = templates.staticDelegator(method: m, replace_args: ["handle": "getHandle()"])
         }
     }

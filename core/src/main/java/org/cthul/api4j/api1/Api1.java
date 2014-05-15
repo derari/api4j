@@ -7,6 +7,8 @@ import java.util.*;
 import org.cthul.api4j.api.*;
 import org.cthul.api4j.gen.GeneratedClass;
 import org.cthul.api4j.groovy.*;
+import org.cthul.strings.JavaNames;
+import org.cthul.strings.plural.DefaultEnglishPluralizer;
 
 public class Api1 extends DslNative implements AutoCloseable {
     
@@ -24,26 +26,25 @@ public class Api1 extends DslNative implements AutoCloseable {
         dsl.getExtensions().addAll(Arrays.asList(
                 GlobalExt.class,
                 QdoxExt.class
-                ));
+            ));
+        dsl.getGlobalExtensions().addAll(Arrays.asList(
+                JavaNames.class,
+                DefaultEnglishPluralizer.class
+            ));
+        
         templates = new Templates(ctx.getTemplates(), true);
-        templates.set("staticDelegator", cfg.fmTemplate("org/cthul/api4j/api1/staticDelegator.ftl"));
+        String[] defaultTemplates = {
+            "call", "staticCall",
+            "delegator", "staticDelegator"};
+        for (String t: defaultTemplates) {
+            templates.set(t, cfg.fmTemplate("org/cthul/api4j/api1/" + t + ".ftl"));
+        }
     }
 
-    //    public DslList<JavaClass> classes(List<String> patterns) {
-    //        DslList<JavaClass> result = new DslList<>(dsl());
-    //        for (String s: patterns) {
-    //            JavaClass jc = g.getQdox().getClassByName(s);
-    //            result.addValue(jc);
-    //        }
-    //        return result;
-    //    }
-    //
-    //    public DslList<JavaClass> classes(String... patterns) {
-    ////        PatternSearcher s = PatternSearcher.forPatterns(patterns);
-    ////        List<JavaClass> list = gen.getQdox().search(s);
-    ////        return new DslList<>(dsl(), list);
-    //        return classes(Arrays.asList(patterns));
-    //    }
+    public Templates getTemplates() {
+        return templates;
+    }
+
     @Override
     protected Object methodMissing(String name, Object arg) {
         Object[] args = (Object[]) arg;
@@ -90,7 +91,11 @@ public class Api1 extends DslNative implements AutoCloseable {
     public GeneratedClass generateClass() {
         String uri = ctx.getUri();
         int dot = uri.indexOf('.');
-        return generateClass(uri.substring(0, dot));
+        if (dot > 0) {
+            return generateClass(uri.substring(0, dot));
+        } else {
+            return generateClass(uri);
+        }
     }
     
     public Object generateClass(Closure<?> closure) {

@@ -21,9 +21,9 @@ public class MethodSignature extends GroovyObjectSupport {
         for (String s: string.split(",")) {
             s = s.trim();
             if (!s.isEmpty()) {
-                String[] def = s.split(" ");
-                JavaClass jc = qdox.getClassByName(def[0]);
-                JavaParameter jp = new DefaultJavaParameter(jc, def[1]);
+                int space = s.lastIndexOf(' ');
+                JavaClass jc = qdox.getClassByName(s.substring(0, space));
+                JavaParameter jp = new DefaultJavaParameter(jc, s.substring(space+1));
                 m.getParameters().add(jp);
             }
         }

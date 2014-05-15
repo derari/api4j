@@ -1,11 +1,15 @@
 package org.cthul.api4j.groovy;
 
+import groovy.lang.GroovyObjectSupport;
 import groovy.lang.GroovyShell;
+import groovy.lang.MetaClass;
 import groovy.lang.Script;
 import groovy.util.DelegatingScript;
 import java.io.IOException;
+import java.util.Iterator;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.cthul.api4j.api1.QdoxExt;
 
 public abstract class GroovyScript {

@@ -34,6 +34,21 @@ public class DslList extends AbstractList<Object> implements DslObject<List<?>> 
     }
 
     @Override
+    public boolean remove(Object o) {
+        return actual.remove(DslUtils.unwrap(o));
+    }
+
+    @Override
+    public Object remove(int index) {
+        return dsl.wrap(actual.remove(index));
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return actual.contains(DslUtils.unwrap(o));
+    }
+
+    @Override
     public int size() {
         return actual.size();
     }

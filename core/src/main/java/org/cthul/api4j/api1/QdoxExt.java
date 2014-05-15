@@ -2,13 +2,19 @@ package org.cthul.api4j.api1;
 
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.AbstractBaseMethod;
+import com.thoughtworks.qdox.model.impl.DefaultJavaClass;
 import com.thoughtworks.qdox.model.impl.DefaultJavaField;
+import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameter;
+import com.thoughtworks.qdox.model.impl.DefaultJavaTypeVariable;
 import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 import java.util.*;
 import org.cthul.api4j.api.PatternSearcher;
 import org.cthul.api4j.gen.*;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.GroovyDsl;
+import org.cthul.strings.JavaNames;
 
 public class QdoxExt {
 
@@ -54,8 +60,22 @@ public class QdoxExt {
         return newField;
     }
     
+    public DefaultJavaField generateField(JavaClass jc, Map<String, Object> map, String name) {
+        DefaultJavaField newField = generateField(jc, name);
+        GroovyObject go = (GroovyObject) dsl.wrap(newField);
+        for (Map.Entry<String, Object> e: map.entrySet()) {
+            go.setProperty(e.getKey(), e.getValue());
+        }
+        return newField;
+    }
+    
     public Object generateField(JavaClass jc, String name, Closure<?> cfg) {
         DefaultJavaField newField = generateField(jc, name);
+        return DslUtils.configure(dsl, newField, cfg);
+    }
+    
+    public Object generateField(JavaClass jc, Map<String, Object> map, String name, Closure<?> cfg) {
+        DefaultJavaField newField = generateField(jc, map, name);
         return DslUtils.configure(dsl, newField, cfg);
     }
     
@@ -85,9 +105,21 @@ public class QdoxExt {
         }
     }
     
-    public GeneratedMethod generateMethod(JavaClass jc, String name) {
+    public static GeneratedMethod generateMethod(JavaClass jc, String name) {
         GeneratedMethod gm = new GeneratedMethod(name);
         gm.setParentClass(jc);
+        jc.getMethods().add(gm);
+        return gm;
+    }
+    
+    public GeneratedMethod generateMethod(JavaClass jc, String name, Closure<?> cfg) {
+        GeneratedMethod gm = generateMethod(jc, name);
+        DslUtils.configure(dsl, gm, cfg);
+        return gm;
+    }
+    
+    public static GeneratedMethod generateMethod(JavaClass jc, JavaMethod method) {
+        GeneratedMethod gm = new GeneratedMethod(jc, method);
         jc.getMethods().add(gm);
         return gm;
     }
@@ -110,7 +142,7 @@ public class QdoxExt {
     
     public static void body(AbstractBaseMethod m, String string, Object... args) {
         string = String.format(string, args);
-        body(m, string);
+        body(m).leftShift(string);
     }
     
     public static MethodBody body(AbstractBaseMethod m) {
@@ -121,36 +153,143 @@ public class QdoxExt {
         jm.getModifiers().add(modifiers);
     }
     
+    public void returns(DefaultJavaMethod method, String type) {
+        JavaClass jc = api1.getConfiguration().getQdox().getClassByName(type);
+        method.setReturns(jc);
+    }
+    
     public void type(DefaultJavaField field, String type) {
         JavaClass jc = api1.getConfiguration().getQdox().getClassByName(type);
         field.setType(jc);
     }
     
-    public void generateGetter(JavaField field) {
-        Map<String, String> map = new HashMap<>();
-        map.put("modifiers", "public");
-        generateGetter(field, map);
+    public GeneratedMethod generateGetter(JavaField field) {
+        return generateGetter(field, Collections.<String, String>emptyMap());
     }
     
-    public void generateGetter(JavaField field, Map<String, String> map) {
+    public GeneratedMethod generateGetter(JavaField field, Map<String, String> map) {
         JavaClass type = field.getType();
-        boolean isBool = false;
-        Object arg = map.remove("isBool");
+        String name;
+        Object arg;
+        arg = map.remove("name");
         if (arg != null) {
-            isBool = (Boolean) arg;
-        } else if (type.getName().equals("boolean") || type.getName().endsWith("Boolean")) {
-            isBool = true;
+            name = arg.toString();
+        } else {
+            boolean isBool = false;
+            arg = map.remove("isBool");
+            if (arg != null) {
+                isBool = (Boolean) arg;
+            } else if (type.getName().equals("boolean") || type.getName().endsWith("Boolean")) {
+                isBool = true;
+            }
+            name = JavaNames.CamelCase(field.getName());
+            name = (isBool ? "is" : "get") + name;
         }
-        String name = field.getName();
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        name = (isBool ? "is" : "get") + name;
         GeneratedMethod getter = generateMethod(field.getDeclaringClass(), name);
         getter.setReturns(type);
         getter.setSourceCode(String.format("return this.%s;", field.getName()));
         arg = map.remove("modifiers");
         if (arg != null) {
             getter.getModifiers().add((String) arg);
+        } else {
+            getter.getModifiers().add("public");
         }
+        return getter;
     }
     
+    public Object generateGetter(JavaField field, Closure<?> cgf) {
+        GeneratedMethod getter = generateGetter(field);
+        return DslUtils.configure(dsl, getter, cgf);
+    }
+    
+    public Object generateGetter(JavaField field, Map<String, String> map, Closure<?> cgf) {
+        GeneratedMethod getter = generateGetter(field, map);
+        return DslUtils.configure(dsl, getter, cgf);
+    }
+    
+    public GeneratedMethod generateSetter(JavaField field) {
+        return generateSetter(field, Collections.<String, String>emptyMap());
+    }
+    
+    public GeneratedMethod generateSetter(JavaField field, Map<String, String> map) {
+        Object arg;
+        String name;
+        boolean fluent = false;
+        arg = map.remove("fluent");
+        if (arg != null) {
+            fluent = (Boolean) arg;
+        }
+        arg = map.remove("name");
+        if (arg != null) {
+            name = arg.toString();
+        } else if (fluent) {
+            name = field.getName();
+        } else {
+            name = "set" + JavaNames.CamelCase(field.getName());
+        }
+        GeneratedMethod setter = generateMethod(field.getDeclaringClass(), name);
+        JavaParameter param = new DefaultJavaParameter(field.getType(), field.getName());
+        setter.getParameters().add(param);
+        setter.setSourceCode(String.format("this.%s = %<s;%n", field.getName()));
+        arg = map.remove("modifiers");
+        if (arg != null) {
+            setter.getModifiers().add((String) arg);
+        } else {
+            setter.getModifiers().add("public");
+        }
+        if (fluent) {
+            setter.setReturns(field.getDeclaringClass());
+            body(setter).leftShift("return this;");
+        }
+        return setter;
+    }
+    
+    public Object generateSetter(JavaField field, Closure<?> cgf) {
+        GeneratedMethod setter = generateSetter(field);
+        return DslUtils.configure(dsl, setter, cgf);
+    }
+    
+    public Object generateSetter(JavaField field, Map<String, String> map, Closure<?> cgf) {
+        GeneratedMethod setter = generateSetter(field, map);
+        return DslUtils.configure(dsl, setter, cgf);
+    }
+    
+    public void interfaces(DefaultJavaClass jc, Collection<?> c) {
+        List<JavaClass> list = new ArrayList<>(c.size());
+        for (Object o: c) {
+            if (o instanceof JavaClass) {
+                list.add((JavaClass) o);
+            } else {
+                JavaClass iface = api1.getConfiguration().getQdox().getClassByName(o.toString());
+                list.add(iface);
+            }
+        }
+        jc.setImplementz(list);
+    }
+    
+    public void typeParameters(DefaultJavaClass jc, String... strings) {
+        typeParameters(jc, Arrays.asList(strings));
+    }
+    
+    public void typeParameters(DefaultJavaClass jc, Collection<?> c) {
+        List<DefaultJavaTypeVariable<JavaClass>> list = new ArrayList<>(c.size());
+        for (Object o: c) {
+            if (o instanceof DefaultJavaTypeVariable) {
+                list.add((DefaultJavaTypeVariable) o);
+            } else {
+                String def = o.toString();
+                int iExtends = def.indexOf(" extends ");
+                String name = iExtends > 0 ? def.substring(0, iExtends) : def;
+                DefaultJavaTypeVariable<JavaClass> var = new DefaultJavaTypeVariable<JavaClass>(name, jc);
+                if (iExtends > 0) {
+                    for (String b: def.substring(iExtends+9).split("&")) {
+                        JavaClass bound = api1.getConfiguration().getQdox().getClassByName(b);
+                        var.getBounds().add(bound);
+                    }
+                }
+                list.add(var);
+            }
+        }
+        jc.setTypeParameters(list);
+    }
 }

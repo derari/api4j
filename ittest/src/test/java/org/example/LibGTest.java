@@ -9,6 +9,5 @@ public class LibGTest {
     @Test
     public void test() {
         assertThat(LibG.theAnswer(), is(42));
-//        assertThat(LibG.map())
     }
 }

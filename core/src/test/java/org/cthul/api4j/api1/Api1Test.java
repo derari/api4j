@@ -1,7 +1,5 @@
 package org.cthul.api4j.api1;
 
-import com.thoughtworks.qdox.model.JavaConstructor;
-import com.thoughtworks.qdox.model.impl.DefaultJavaConstructor;
 import java.io.File;
 import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.api.TestConfiguration;
@@ -51,9 +49,20 @@ public class Api1Test {
         assertFileGenerated("fm/StaticDelegator");
     }
     
+    
+    @Test
+    public void test_delegator() {
+        assertFileGenerated("fm/Delegator");
+    }
+    
     @Test
     public void test_my_handle() {
         assertFileGenerated("fm/MyHandle");
+    }
+    
+    @Test
+    public void test_builder() {
+        assertFileGenerated("fm/Builder");
     }
 }
     

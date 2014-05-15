@@ -3,6 +3,7 @@ package org.cthul.api4j.api1;
 import com.thoughtworks.qdox.model.JavaClass;
 import groovy.lang.Closure;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.gen.GeneratedClass;
@@ -48,6 +49,11 @@ public class GlobalExt {
             result.add(jc);
         }
         return result;
+    }
+    
+    @GlobalExtension
+    public List<JavaClass> classes(String... patterns) {
+        return classes(Arrays.asList(patterns));
     }
     
 //    public JavaClass asClass(Object any, String pattern) {

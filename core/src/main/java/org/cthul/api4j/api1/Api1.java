@@ -55,6 +55,10 @@ public class Api1 extends DslNative implements AutoCloseable {
         }
         return super.methodMissing(name, arg);
     }
+
+    public ScriptContext getContext() {
+        return ctx;
+    }
     
     public Api4JConfiguration getConfiguration() {
         return ctx.getConfiguration();

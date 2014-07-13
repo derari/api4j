@@ -44,7 +44,7 @@ public class Api4JConfigurationTest {
         }
 
         @Override
-        public void runScript(String f) {
+        public void runScript(File root, String f) {
             files.add(f.replace('\\', '/'));
         }
     }

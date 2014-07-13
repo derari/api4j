@@ -30,6 +30,11 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, D
         setJavaPackage(pkg);
         setName(name.substring(dot+1));
     }
+    
+    public GeneratedClass(String name) {
+        super(name);
+        file = null;
+    }
 
     @Override
     public ClassLibrary getJavaClassLibrary() {
@@ -47,6 +52,7 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, D
 
     @Override
     public void close() throws IOException {
+        if (file == null) return;
         file.getParentFile().mkdirs();
         FileOutputStream fos = new FileOutputStream(file);
         try (OutputStreamWriter w = new OutputStreamWriter(fos, "UTF-8")) {

@@ -28,7 +28,7 @@ public class ScriptFinder extends ObjectResolver<ApiScript, RuntimeException> {
 
     @Override
     public ApiScript resolve(String uri) throws RuntimeException {
-        return super.resolve(uri);
+        return super.resolve(uri.replace('\\', '/'));
     }
     
     @Override
@@ -41,7 +41,8 @@ public class ScriptFinder extends ObjectResolver<ApiScript, RuntimeException> {
         private final RResult result;
 
         public ResolvedScript(RResult result, Api4JConfiguration g) {
-            super(result.getUri(), g.getRootContext().subcontext(result.getUri()));
+            super(result.getUri().replace('\\', '/'), 
+                    g.getRootContext().subcontext(result.getUri().replace('\\', '/')));
             this.result = result;
         }
 

@@ -14,7 +14,7 @@ public class Api1Test {
     @Test
     public void test_empty() {
         Api4JConfiguration cfg = TestConfiguration.getWithSource();
-        cfg.runScript("api1Test/empty/empty.api.groovy");
+        cfg.runScript(root, "api1Test/empty/empty.api.groovy");
     }
     
     private void assertFileGenerated(String script) {
@@ -25,7 +25,7 @@ public class Api1Test {
         File expectedFile = new File(root, file + ".java");
         expectedFile.delete();
         Api4JConfiguration cfg = TestConfiguration.getWithSource();
-        cfg.runScript("api1Test/" + script + ".api.groovy");
+        cfg.runScript(root, "api1Test/" + script + ".api.groovy");
         assertThat(expectedFile.exists(), is(true));        
     }
     

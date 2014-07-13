@@ -20,7 +20,7 @@ public class ApiScriptTest {
     public void test_run() {
         Api4JConfiguration g = new Api4JConfiguration(new File("target"), null);
         ApiScript script = new TestApiScript(g.getRootContext());
-        script.run();
+        script.run(null);
         assertThat(success, is(true));
     }
     

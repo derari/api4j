@@ -1,20 +1,19 @@
 package org.cthul.api4j.groovy;
 
-import groovy.lang.GroovyObjectSupport;
+import groovy.lang.Binding;
+import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
-import groovy.lang.MetaClass;
 import groovy.lang.Script;
 import groovy.util.DelegatingScript;
+import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.cthul.api4j.api1.QdoxExt;
 
 public abstract class GroovyScript {
     
     private DelegatingScript cachedScript = null;
+    private DslShell shell;
     
     protected CompilerConfiguration getCompilerConfiguration() {
         return DefaultConfig.CFG;
@@ -22,8 +21,10 @@ public abstract class GroovyScript {
     
     private synchronized DelegatingScript getScript() throws CompilationFailedException, IOException {
         if (cachedScript == null) {
-            CompilerConfiguration cfg = getCompilerConfiguration();
-            GroovyShell shell = new GroovyShell(cfg);
+            if (shell == null) {
+                CompilerConfiguration cfg = getCompilerConfiguration();
+                shell = new DslShell(cfg);
+            }
             cachedScript = (DelegatingScript) parseScript(shell);
         }
         return cachedScript;
@@ -32,6 +33,7 @@ public abstract class GroovyScript {
     protected void run(Object delegatee) {
         try {
             DelegatingScript script = getScript();
+            shell.setDelegatee(delegatee);
             script.setDelegate(delegatee);
             script.run();
         } catch (CompilationFailedException | IOException ex) {
@@ -41,11 +43,50 @@ public abstract class GroovyScript {
     
     protected abstract Script parseScript(GroovyShell shell) throws CompilationFailedException, IOException;
     
+    static class DslShell extends GroovyShell {
+        private Object delegatee;
+        public DslShell(CompilerConfiguration config) {
+            super(config);
+        }
+
+        public DslShell(Object delegatee, ClassLoader parent, Binding binding, CompilerConfiguration config) {
+            super(parent, binding, config);
+            this.delegatee = delegatee;
+        }
+
+        public void setDelegatee(Object delegatee) {
+            this.delegatee = delegatee;
+        }
+
+        @Override
+        public Script parse(GroovyCodeSource codeSource) throws CompilationFailedException {
+            DelegatingScript s = (DelegatingScript) super.parse(codeSource);
+            if (delegatee != null) s.setDelegate(delegatee);
+            return s;
+        }
+    }
+    
+    public static abstract class MyDelegatingScript extends DelegatingScript {
+
+        public MyDelegatingScript() {
+        }
+
+        public MyDelegatingScript(Binding binding) {
+            super(binding);
+        }
+
+        @Override
+        public Object evaluate(File file) throws CompilationFailedException, IOException {
+            GroovyShell shell = new DslShell(getDelegate(), getClass().getClassLoader(), getBinding(), DefaultConfig.CFG);
+            return shell.evaluate(file);
+        }
+    }
+    
     static class DefaultConfig {
         static final CompilerConfiguration CFG = new CompilerConfiguration();
         static {
-            CFG.setScriptBaseClass(DelegatingScript.class.getName());
-            CFG.getScriptExtensions().add(QdoxExt.class.getCanonicalName());
+            CFG.setScriptBaseClass(MyDelegatingScript.class.getName());
+            //CFG.getScriptExtensions().add(QdoxExt.class.getCanonicalName());
         }
     }
 }

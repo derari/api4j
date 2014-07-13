@@ -23,7 +23,7 @@ public class Api4JConfiguration {
     private final ScriptFinder scriptFinder;
     private final Configuration fmConfig;
     private final XmlLoader xmlLoader;
-    private final ScriptContext rootContext = new ScriptContext(this);
+    private final ScriptContext rootContext = new ScriptContext(this, null);
 
     @SuppressWarnings({"LeakingThisInConstructor", "OverridableMethodCallInConstructor"})
     public Api4JConfiguration(File out, ResourceResolver resolver) {
@@ -38,12 +38,12 @@ public class Api4JConfiguration {
         xmlLoader = new XmlLoader(this);
     }
     
-    public void runScript(File f) {
-        scriptFinder.resolve(f).run();
+    public void runScript(File root, File f) {
+        scriptFinder.resolve(f).run(root);
     }
     
-    public void runScript(String s) {
-        scriptFinder.resolve(s).run();
+    public void runScript(File root, String s) {
+        scriptFinder.resolve(s).run(root);
     }
     
     public void addSourceTree(File f) {
@@ -76,10 +76,16 @@ public class Api4JConfiguration {
                 entry = dir.relativize(entry);
                 System.out.println("? " + entry);
                 for (PathMatcher pm: em) {
-                    if (pm.matches(entry)) return false;
+                    if (pm.matches(entry)) {
+                        System.out.println(" - " + pm);
+                        return false;
+                    }
                 }
                 for (PathMatcher pm: im) {
-                    if (pm.matches(entry)) return true;
+                    if (pm.matches(entry)) {
+                        System.out.println(" + " + pm);
+                        return true;
+                    }
                 }
                 return false;
             }
@@ -101,7 +107,7 @@ public class Api4JConfiguration {
                         xmlLoader.load(fileName, file.toFile());
                     } else {
                         System.out.println("Running " + fileName);
-                        runScript(fileName);
+                        runScript(root.toFile(), fileName);
                     }
                 }
             }

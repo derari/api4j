@@ -1,7 +1,9 @@
 package org.cthul.api4j.api1;
 
 import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.impl.AbstractBaseJavaEntity;
 import com.thoughtworks.qdox.model.impl.AbstractBaseMethod;
+import com.thoughtworks.qdox.model.impl.DefaultDocletTag;
 import com.thoughtworks.qdox.model.impl.DefaultJavaClass;
 import com.thoughtworks.qdox.model.impl.DefaultJavaField;
 import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
@@ -35,6 +37,27 @@ public class QdoxExt {
         return false;
     }
     
+    public static GeneratedClass nestedClass(DefaultJavaClass jc, String name) {
+        GeneratedClass gc = new GeneratedClass(name);
+        jc.addClass(gc);
+        gc.setParentClass(jc);
+        return gc;
+    }
+    
+    public Object nestedClass(DefaultJavaClass jc, String name, Closure<?> closure) {
+        return nestedClass(jc, name).configure(api1.dsl(), closure);
+    }
+    
+    public static GeneratedClass nestedInterface(DefaultJavaClass jc, String name) {
+        GeneratedClass gc = nestedClass(jc, name);
+        gc.setInterface(true);
+        return gc;
+    }
+    
+    public Object nestedInterface(DefaultJavaClass jc, String name, Closure<?> closure) {
+        return nestedInterface(jc, name).configure(api1.dsl(), closure);
+    }
+    
     public static String argumentsString(JavaMethod jm) {
         return argumentsString(jm, Collections.<String,String>emptyMap());
     }
@@ -50,6 +73,19 @@ public class QdoxExt {
     public void signature(AbstractBaseMethod m, String string) {
         m.getParameters().clear();
         signature(m).leftShift(string);
+    }
+    
+    public void docTags(AbstractBaseJavaEntity je, String... tags) {
+        docTags(je, Arrays.asList(tags));
+    }
+    
+    public void docTags(AbstractBaseJavaEntity je, List<String> tags) {
+        List<DocletTag> newTags = new ArrayList<>();
+        for (String s: tags) {
+            String[] t = s.split(" ", 1);
+            newTags.add(new DefaultDocletTag(t[0], t.length > 1 ? t[1] : ""));
+        }
+        je.setTags(newTags);
     }
     
     public static DefaultJavaField generateField(JavaClass jc, String name) {

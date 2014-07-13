@@ -1,7 +1,12 @@
 package org.cthul.api4j.api1;
 
+import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.impl.DefaultJavaAnnotation;
 import groovy.lang.Closure;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,10 +48,7 @@ public class GlobalExt {
     public List<JavaClass> classes(List<String> patterns) {
         List<JavaClass> result = new ArrayList<>();
         for (String s: patterns) {
-            int i = s.indexOf('<');
-            if (i > 0) s = s.substring(0, i);
-            JavaClass jc = cfg().getQdox().getClassByName(s);
-            result.add(jc);
+            result.add(cl(s));
         }
         return result;
     }
@@ -56,6 +58,12 @@ public class GlobalExt {
         return classes(Arrays.asList(patterns));
     }
     
+    @GlobalExtension
+    public JavaClass cl(String pattern) {
+        int i = pattern.indexOf('<');
+        if (i > 0) pattern = pattern.substring(0, i);
+        return cfg().getQdox().getClassByName(pattern);
+    }
 //    public JavaClass asClass(Object any, String pattern) {
 //        return classes(any, pattern).get(0);
 //    } 
@@ -76,10 +84,68 @@ public class GlobalExt {
     }
     
     @GlobalExtension
+    public Object generateClass(Closure<?> c) {
+        return api1.generateClass(c);
+    }
+    
+    @GlobalExtension
+    public GeneratedClass generateClass() {
+        return api1.generateClass();
+    }
+    
+    @GlobalExtension
     public Object generateClass(GenerateTask task) {
         return generateClass(task.getName(), task.getClosure());
     }
 
+    @GlobalExtension
+    public Object generateInterface(String name, Closure<?> c) {
+        return generateInterface(name).configure(api1.dsl(), c);
+    }
+    
+    @GlobalExtension
+    public GeneratedClass generateInterface(String name) {
+        GeneratedClass gc = generateClass(name);
+        gc.setInterface(true);
+        return gc;
+    }
+    
+    @GlobalExtension
+    public Object generateInterface(Closure<?> c) {
+        return generateInterface().configure(api1.dsl(), c);
+    }
+    
+    @GlobalExtension
+    public GeneratedClass generateInterface() {
+        GeneratedClass gc = generateClass();
+        gc.setInterface(true);
+        return gc;
+    }
+    
+    @GlobalExtension
+    public Object generateInterface(GenerateTask task) {
+        return generateInterface(task.getName(), task.getClosure());
+    }
+
+    @GlobalExtension
+    public JavaAnnotation at(String at) {
+        JavaClass jc = cfg().getQdox().getClassByName(at);
+        return new DefaultJavaAnnotation(jc, -1);
+    }
+    
+    @GlobalExtension
+    public File scriptFile(String path) {
+        URI uri = api1.getContext().getRoot().toURI();
+//        try {
+            String s = uri.resolve(api1.getContext().getUri()).resolve(path).toString();
+            if (s.startsWith("file:")) s = s.substring(5);
+            while (s.startsWith("\\")) s = s.substring(1);
+            return new File(s);
+//        } catch (URISyntaxException e) {
+//            throw new RuntimeException(e);
+//        }
+    }
+    
 //    public String paramsString(Object any, Object... args) throws TemplateModelException {
 //        return paramsStr.exec(Arrays.asList(args)).toString();
 //    }

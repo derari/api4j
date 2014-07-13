@@ -44,6 +44,7 @@ public class XmlLoader {
         for (XmlConfiguration c: services) {
             XmlHandler h = c.accept(ns, name);
             if (h != null) {
+                System.out.println(path + " -> " + h);
                 h.handle(g, path, new FileInputStream(f));
                 return;
             }

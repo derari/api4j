@@ -1,13 +1,14 @@
 package org.cthul.api4j.api;
 
 import groovy.lang.Closure;
+import java.io.File;
 import org.cthul.api4j.api1.Api1;
 import org.cthul.api4j.groovy.GroovyScript;
 
 public abstract class ApiScript extends GroovyScript {
     
     private final String uri;
-    private final ScriptContext ctx;
+    private ScriptContext ctx;
 
     public ApiScript(String uri, ScriptContext ctx) {
         this.uri = uri;
@@ -18,7 +19,8 @@ public abstract class ApiScript extends GroovyScript {
         return uri;
     }
     
-    public void run() {
+    public void run(File root) {
+        ctx = ctx.newRoot(root);
         run(this);
     }
 
@@ -28,7 +30,7 @@ public abstract class ApiScript extends GroovyScript {
     }
 
     public void include(String s) {
-        findScript(s).run();
+        findScript(s).run(ctx.getRoot());
     }
     
     public void include(Object o, String s) {

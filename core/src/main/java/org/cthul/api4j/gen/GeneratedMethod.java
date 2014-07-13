@@ -32,7 +32,7 @@ public class GeneratedMethod extends DefaultJavaMethod {
     public GeneratedMethod(JavaClass parent, JavaMethod source) {
         super(source.getName());
         setParentClass(parent);
-        setAnnotations(copyAll(source.getAnnotations(), this, COPY_ANNOTATION));
+//        setAnnotations(copyAll(source.getAnnotations(), this, COPY_ANNOTATION));
         setComment(source.getComment());
         setExceptions(new LinkedList<>(source.getExceptions()));
         setModifiers(new ModifierList(source.getModifiers()));

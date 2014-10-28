@@ -11,12 +11,20 @@ import static org.cthul.api4j.fm.FmUtils.getValue;
 public class ParameterStringDirective extends DslDirectiveBase 
                 implements TemplateMethodModelEx, TemplateDirectiveModel {
     
-    public static final ParameterStringDirective ARGUMENTS = new ParameterStringDirective(true);
+    public static final ParameterStringDirective ARGUMENTS = new ParameterStringDirective(true, false);
+    public static final ParameterStringDirective PARAMETERS = new ParameterStringDirective(false, false);
+    public static final ParameterStringDirective SIGNATURE = new ParameterStringDirective(false, true);
     
     private final boolean argumentsOnly;
+    private final boolean signatureOnly;
 
     public ParameterStringDirective(boolean argumentsOnly) {
+        this(argumentsOnly, false);
+    }
+    
+    public ParameterStringDirective(boolean argumentsOnly, boolean signatureOnly) {
         this.argumentsOnly = argumentsOnly;
+        this.signatureOnly = signatureOnly;
     }
 
     @Override
@@ -55,6 +63,10 @@ public class ParameterStringDirective extends DslDirectiveBase
         env.getOut().append(build(jparams, replace));
     }
     
+    public String build(List<JavaParameter> params) {
+        return build(params, Collections.emptyMap());
+    }
+    
     public String build(List<JavaParameter> params, Map<String, String> replace) {
         if (params == null) {
             throw new IllegalArgumentException("Expected parameters argument");
@@ -70,9 +82,11 @@ public class ParameterStringDirective extends DslDirectiveBase
                 }
                 if (!argumentsOnly) {
                     sb.append(pm.getType().getGenericValue());
-                    sb.append(' ');
+                    if (!signatureOnly) sb.append(' ');
                 }
-                sb.append(pm.getName());
+                if (!signatureOnly) {
+                    sb.append(pm.getName());
+                }
             } else if (argumentsOnly) {
                 if (sb.length() > 0) {
                     sb.append(", ");

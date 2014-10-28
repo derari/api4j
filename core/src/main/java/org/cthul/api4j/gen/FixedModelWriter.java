@@ -11,14 +11,9 @@ import java.util.*;
 public class FixedModelWriter
     implements ModelWriter
 {
-    public static final ModelWriterFactory FACTORY = new ModelWriterFactory() {
-        @Override
-        public ModelWriter newInstance() {
-            return new FixedModelWriter();
-        }
-    };
+    public static final ModelWriterFactory FACTORY = FixedModelWriter::new;
     
-    private IndentBuffer buffer = new IndentBuffer();
+    private final IndentBuffer buffer = new IndentBuffer();
 
     public FixedModelWriter() {
         buffer.setIndentation("    ");

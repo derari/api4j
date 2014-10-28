@@ -6,8 +6,8 @@ import freemarker.ext.util.WrapperTemplateModel;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateSequenceModel;
 import java.util.*;
-import org.cthul.api4j.groovy.DslUtils;
 import static org.cthul.api4j.fm.FmUtils.*;
+import org.cthul.api4j.groovy.DslUtils;
 
 public abstract class DslDirectiveBase {
     

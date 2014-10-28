@@ -5,7 +5,6 @@ import freemarker.template.*;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
 import java.util.List;
-import org.cthul.api4j.groovy.DslList;
 import org.cthul.api4j.groovy.DslUtils;
 
 public class DslObjectWrapper extends DefaultObjectWrapper {
@@ -13,7 +12,7 @@ public class DslObjectWrapper extends DefaultObjectWrapper {
     @Override
     public TemplateModel wrap(Object obj) throws TemplateModelException {
         Object unwrapped = DslUtils.unwrap(obj);
-        if (obj instanceof DslList || (unwrapped != null && unwrapped.getClass().isArray())) {
+        if (unwrapped != null && unwrapped.getClass().isArray()) {
             obj = unwrapped;
         }
         if (obj instanceof GroovyObject) {

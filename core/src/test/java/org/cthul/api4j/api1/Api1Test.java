@@ -1,69 +1,107 @@
 package org.cthul.api4j.api1;
 
 import java.io.File;
-import org.cthul.api4j.Api4JConfiguration;
-import org.cthul.api4j.api.TestConfiguration;
+import java.net.URI;
+import org.cthul.api4j.Api4JEngine;
+import org.cthul.api4j.TestEngine;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import org.junit.Test;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.MatcherAssert.*;
 
 public class Api1Test {
 
-    private static final File root = new File("target/test-out/api1Test");
+    private static final URI root = URI.create("test:/");
     
     @Test
     public void test_empty() {
-        Api4JConfiguration cfg = TestConfiguration.getWithSource();
-        cfg.runScript(root, "api1Test/empty/empty.api.groovy");
-    }
-    
-    private void assertFileGenerated(String script) {
-        assertFileGenerated(script, script);
-    }
-    
-    private void assertFileGenerated(String script, String file) {
-        File expectedFile = new File(root, file + ".java");
-        expectedFile.delete();
-        Api4JConfiguration cfg = TestConfiguration.getWithSource();
-        cfg.runScript(root, "api1Test/" + script + ".api.groovy");
-        assertThat(expectedFile.exists(), is(true));        
+        Api4JEngine engine = TestEngine.testEngine();
+        engine.runScript(root, "api1/emptyTest.api.groovy");
     }
     
     @Test
     public void test_explicit_name() {
-        assertFileGenerated("empty/ExplicitName", "empty/ExplicitNameX");
+        assertGeneratesFile("api1/ExplicitName", "api1/ExplicitNameX");
     }
     
     @Test
     public void test_explicit_name2() {
-        assertFileGenerated("empty/ExplicitName2", "empty/ExplicitNameX2");
+        assertGeneratesFile("api1/ExplicitName2", "api1/ExplicitNameX2");
     }
     
     @Test
-    public void test_implicit_name() {
-        assertFileGenerated("empty/ImplicitName");
+    public void test_implicit() {
+        assertGeneratesFile("api1/ImplicitName");
+    }
+    
+    @Test
+    public void test_imports() {
+        assertGeneratesFile("api1/ImportTest");
+    }
+    
+    @Test
+    public void test_qdox() {
+        assertGeneratesFile("api1/QdoxTest");
     }
     
     @Test
     public void test_static_delegator() {
-        assertFileGenerated("fm/StaticDelegator");
-    }
-    
-    
-    @Test
-    public void test_delegator() {
-        assertFileGenerated("fm/Delegator");
+        assertGeneratesFile("api1/StaticDelegator");
     }
     
     @Test
-    public void test_my_handle() {
-        assertFileGenerated("fm/MyHandle");
+    public void test_handle() {
+        assertGeneratesFile("api1/MyHandle");
     }
     
-    @Test
-    public void test_builder() {
-        assertFileGenerated("fm/Builder");
+    private void assertGeneratesFile(String script) {
+        assertGeneratesFile(script, script);
     }
+    
+    private void assertGeneratesFile(String script, String file) {
+        File expectedFile = new File(TestEngine.target, file + ".java");
+        expectedFile.delete();
+
+        Api4JEngine engine = TestEngine.testEngine();
+        engine.runScript(root, script + ".api.groovy");
+        
+        assertThat(expectedFile.exists(), is(true));        
+    }
+    
+//    @Test
+//    public void test_explicit_name() {
+//        assertFileGenerated("empty/ExplicitName", "empty/ExplicitNameX");
+//    }
+//    
+//    @Test
+//    public void test_explicit_name2() {
+//        assertFileGenerated("empty/ExplicitName2", "empty/ExplicitNameX2");
+//    }
+//    
+//    @Test
+//    public void test_implicit_name() {
+//        assertFileGenerated("empty/ImplicitName");
+//    }
+//    
+//    @Test
+//    public void test_static_delegator() {
+//        assertFileGenerated("fm/StaticDelegator");
+//    }
+//    
+//    
+//    @Test
+//    public void test_delegator() {
+//        assertFileGenerated("fm/Delegator");
+//    }
+//    
+//    @Test
+//    public void test_my_handle() {
+//        assertFileGenerated("fm/MyHandle");
+//    }
+//    
+//    @Test
+//    public void test_builder() {
+//        assertFileGenerated("fm/Builder");
+//    }
 }
     
 //<<<<<<< HEAD

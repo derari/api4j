@@ -2,30 +2,33 @@ package org.cthul.api4j.gen;
 
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.AbstractBaseMethod;
+import com.thoughtworks.qdox.model.impl.DefaultDocletTag;
 import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.cthul.api4j.api1.QdoxTools;
 import static org.cthul.api4j.gen.GeneratedModel.*;
 
 public class GeneratedMethod extends DefaultJavaMethod {
+    
+    {
+        setModifiers(new ModifierList());
+        setParameters(new LinkedList<>());        
+        setTags(new DocTagList());
+        setTypeParameters(new TypeParameterList<>(this));
+        setAnnotations(new AnnotationList());
+    }
 
     public GeneratedMethod() {
-        setModifiers(new ModifierList());
-        setParameters(new LinkedList<JavaParameter>());
     }
 
     public GeneratedMethod(String name) {
         super(name);
-        setModifiers(new ModifierList());
-        setParameters(new LinkedList<JavaParameter>());
     }
 
     public GeneratedMethod(JavaClass returns, String name) {
         super(returns, name);
-        setModifiers(new ModifierList());
-        setParameters(new LinkedList<JavaParameter>());
     }
     
     @SuppressWarnings("LeakingThisInConstructor")
@@ -35,23 +38,30 @@ public class GeneratedMethod extends DefaultJavaMethod {
 //        setAnnotations(copyAll(source.getAnnotations(), this, COPY_ANNOTATION));
         setComment(source.getComment());
         setExceptions(new LinkedList<>(source.getExceptions()));
-        setModifiers(new ModifierList(source.getModifiers()));
-        setParameters(copyAll(source.getParameters(), this, COPY_PARAMETER));
+        getModifiers().addAll(source.getModifiers());
+        getParameters().addAll(copyAll(source.getParameters(), this, COPY_PARAMETER));
         setReturns(source.getReturns());
-        setTags(copyAll(source.getTags(), this, COPY_TAG));
-        setTypeParameters(copyMethodTypeVariables(source.getTypeParameters(), this));
+        getTags().addAll(copyAll(source.getTags(), this, COPY_TAG));
+        getTags().add(new DefaultDocletTag("see", QdoxTools.getDocReference(source)));
+        getTypeParameters().addAll(copyMethodTypeVariables(source.getTypeParameters(), this));
     }
 
+//    @Override
+//    public List<String> getModifiers() {
+//        return super.getModifiers();
+//    }
     @Override
-    public List<String> getModifiers() {
-        return super.getModifiers();
+    public boolean isVarArgs() {
+        if (super.isVarArgs()) return true;
+        List<JavaParameter> params = getParameters();
+        if (params.isEmpty()) return false;
+        return params.get( params.size() -1 ).isVarArgs();
     }
     
-    
-
     @Override
     public void setParameters(List<JavaParameter> javaParameters) {
         if (javaParameters.isEmpty()) {
+            // avoid bug in super.setParameters
             injectParameters(this, javaParameters);
         } else {
             super.setParameters(javaParameters);
@@ -79,7 +89,7 @@ public class GeneratedMethod extends DefaultJavaMethod {
             }
             fParams.setAccessible(true);
             fParameters = fParams;
-        } catch (Exception e) {
+        } catch (SecurityException e) {
             throw new RuntimeException(e);
         }
     }

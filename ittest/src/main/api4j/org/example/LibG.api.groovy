@@ -3,10 +3,10 @@ api1 {
     def classNames = [
         "org.example.StaticLib1",
         "org.example.StaticLib2"]
-    def methods = classes(classNames).allMethods().grep { it.hasAnnotation(".Factory") }
+    def factories = classNames.asClasses().allMethods.grep { it.hasAnnotation(".Factory") }
 
-    generateClass {
-        generateMethods(methods) { m ->
+    generatedClass {
+        methods(factories) { m ->
             body = templates.staticDelegator(method: m)
         }
     }

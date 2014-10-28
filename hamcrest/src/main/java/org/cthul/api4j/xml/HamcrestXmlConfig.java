@@ -12,8 +12,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.api.Template;
 import org.cthul.api4j.api1.Api1;
-import org.cthul.api4j.api1.GlobalExt;
-import org.cthul.api4j.api1.QdoxExt;
+import static org.cthul.api4j.api1.QdoxTools.*;
 import org.cthul.api4j.gen.GeneratedClass;
 import org.cthul.api4j.gen.GeneratedMethod;
 
@@ -48,24 +47,22 @@ public class HamcrestXmlConfig implements XmlConfiguration {
             xml.close();
             in.close();
             
-            try (Api1 api = new Api1(cfg.getRootContext().subcontext(path))) {
-                GlobalExt ge = api.dsl().getExtension(GlobalExt.class);
-
-                List<JavaClass> qdoxClasses = ge.classes(classNames);
+            new Api1(cfg.getRootContext().subcontext(path)).run((api) -> {
+                List<JavaClass> qdoxClasses = asClasses(classNames);
                 Map<String, Object> argMap = new HashMap<>();
-                Template staticDelegator = api.getTemplates().get("staticDelegator");
+                Template staticDelegator = api.getTemplate("staticDelegator");
 
-                GeneratedClass cg = api.generateClass();
+                GeneratedClass cg = api.createClass();
                 for (JavaClass sourceClass: qdoxClasses) {
                     for (JavaMethod sourceMethod: sourceClass.getMethods()) {
-                        if (QdoxExt.hasAnnotation(sourceMethod, ".Factory")) {
-                            GeneratedMethod newMethod = QdoxExt.generateMethod(cg, sourceMethod);
+                        if (hasAnnotation(sourceMethod, ".Factory")) {
+                            GeneratedMethod newMethod = method(cg, sourceMethod);
                             argMap.put("method", sourceMethod);
-                            QdoxExt.body(newMethod, staticDelegator.generate(argMap));
+                            setBody(newMethod, staticDelegator.generate(argMap));
                         }
                     }
                 }
-            }
+            });
         }
     }
 }

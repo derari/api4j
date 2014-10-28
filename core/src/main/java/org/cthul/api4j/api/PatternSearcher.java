@@ -3,10 +3,11 @@ package org.cthul.api4j.api;
 import com.thoughtworks.qdox.Searcher;
 import com.thoughtworks.qdox.model.JavaClass;
 import java.util.Arrays;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PatternSearcher implements Searcher {
+public class PatternSearcher implements Searcher, Predicate<JavaClass> {
     
     private static final Pattern SYNTAX = Pattern.compile("[.]{1,2}|[/]{1,2}|[*]{1,2}");
     
@@ -54,6 +55,11 @@ public class PatternSearcher implements Searcher {
 
     public PatternSearcher(Pattern... regexes) {
         this.regexes = regexes;
+    }
+
+    @Override
+    public boolean test(JavaClass cls) {
+        return eval(cls);
     }
 
     @Override

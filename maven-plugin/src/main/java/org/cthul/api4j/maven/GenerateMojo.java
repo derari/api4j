@@ -10,6 +10,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.cthul.api4j.Api4JConfiguration;
+import org.cthul.api4j.Api4JEngine;
 import org.cthul.resolve.ClassLoaderResourceResolver;
 import org.cthul.resolve.CompositeResolver;
 import org.cthul.resolve.FileResolver;
@@ -31,6 +32,9 @@ public class GenerateMojo extends AbstractMojo {
     @Parameter(property = "api4j.excludes")
     private String[] excludes;
     
+    @Parameter(property = "api4j.recreate", defaultValue = "false")
+    private boolean recreate;
+    
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
@@ -41,15 +45,18 @@ public class GenerateMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException {
         Api4JConfiguration cfg = createConfiguration();
         for (String src: project.getCompileSourceRoots()) {
-            cfg.addSourceTree(new File(src));
+            cfg.addSourceFolder(new File(src));
         }
+        
+        Api4JEngine engine = cfg.createEngine();
         project.addCompileSourceRoot(target);
+        project.addTestCompileSourceRoot(target);
         if (includes.length == 1 && includes[0].equals("--default--")) {
             includes = new String[]{"**.api.{xml,groovy}"};
         }
         try {
             Path p = Paths.get(source);
-            cfg.runFileTree(p, includes, excludes);
+            engine.runFileTree(p, includes, excludes);
         } catch (Exception e) {
             throw new MojoExecutionException("", e);
         }

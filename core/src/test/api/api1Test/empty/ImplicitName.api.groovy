@@ -1,5 +1,0 @@
-api1 {
-    generateClass {
-
-    }
-}

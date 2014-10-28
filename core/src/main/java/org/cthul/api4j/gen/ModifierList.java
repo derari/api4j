@@ -11,10 +11,12 @@ public class ModifierList extends AbstractList<String> {
     }
 
     public ModifierList(Collection<String> initial) {
+        this();
         addAll(initial);
     }
 
     public ModifierList(String... initial) {
+        this();
         addAll(Arrays.asList(initial));
     }
     
@@ -22,15 +24,16 @@ public class ModifierList extends AbstractList<String> {
         array = null;
         return true;
     }
-
+    
     @Override
     public boolean add(String e) {
+        if (e.isEmpty()) {
+            return false;
+        }
         if (e.contains(" ")) {
             boolean changed = false;
             for (String s: e.split(" ")) {
-                if (!s.isEmpty()) {
-                    changed |= add(s);
-                }
+                changed |= add(s);
             }
             return changed;
         }
@@ -103,18 +106,6 @@ public class ModifierList extends AbstractList<String> {
             }
         };
     }
-
-    private static final Comparator<String> COMP = new Comparator<String>() {
-        @Override
-        public int compare(String o1, String o2) {
-            int m1 = mId(o1);
-            int c = m1 - mId(o2);
-            // if order not equal or equal for known modifier
-            if (c != 0 || m1 < ORDER.length) return c;
-            // compare unknown modifiers
-            return o1.compareTo(o2);
-        }
-    };
     
     private static int mId(String m) {
         for (int i = 0; i < ORDER.length; i++) {
@@ -122,11 +113,24 @@ public class ModifierList extends AbstractList<String> {
         }
         return ORDER.length;
     }
+
+    public static String[] modifiers() {
+        return ORDER.clone();
+    }
     
     private static final String[] ORDER = {
         "private", "protected", "public",
         "abstract", "default", "static", 
         "final",
         "synchronized", "volatile"
+    };
+    
+    private static final Comparator<String> COMP = (o1, o2) -> {
+        int m1 = mId(o1);
+        int c = m1 - mId(o2);
+        // if order not equal or equal for known modifier
+        if (c != 0 || m1 < ORDER.length) return c;
+        // compare unknown modifiers
+        return o1.compareTo(o2);
     };
 }

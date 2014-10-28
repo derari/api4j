@@ -4,5 +4,7 @@ import groovy.lang.Closure;
 
 public interface ClosureConfigurable {
     
-    <V> V configure(Closure<V> closure);
+    default <V> V configure(Closure<V> closure) {
+        return DslUtils.runClosureOn(this, closure);
+    }
 }

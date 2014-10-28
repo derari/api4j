@@ -1,38 +1,36 @@
 package org.cthul.api4j.api1;
 
-import org.cthul.api4j.Api4JConfiguration;
 import groovy.lang.Closure;
-import java.io.Closeable;
-import java.util.*;
-import org.cthul.api4j.api.*;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.MissingMethodException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import org.cthul.api4j.Api4JConfiguration;
+import org.cthul.api4j.api.Api4JScriptContext;
+import org.cthul.api4j.api.Template;
+import org.cthul.api4j.api.Templates;
 import org.cthul.api4j.gen.GeneratedClass;
-import org.cthul.api4j.groovy.*;
-import org.cthul.strings.JavaNames;
-import org.cthul.strings.plural.DefaultEnglishPluralizer;
+import org.cthul.api4j.groovy.ClosureConfigurable;
+import org.cthul.api4j.groovy.DslUtils;
+import org.cthul.api4j.groovy.NamedClosure;
 
-public class Api1 extends DslNative implements AutoCloseable {
+public class Api1 extends GroovyObjectSupport implements ClosureConfigurable, AutoCloseable {
     
-    private final ScriptContext ctx;
-    private final GroovyDsl dsl;
+    private final Api4JScriptContext script;
     private final List<AutoCloseable> closeables = new ArrayList<>();
+    private Exception closeException = null;
     private final Templates templates;
 
-    @SuppressWarnings("LeakingThisInConstructor")
-    public Api1(ScriptContext ctx) {
-        this.ctx = ctx;
-        Api4JConfiguration cfg = ctx.getConfiguration();
-        dsl = new GroovyDsl();
-        dsl.addGlobals(ctx, dsl, this);
-        dsl.getExtensions().addAll(Arrays.asList(
-                GlobalExt.class,
-                QdoxExt.class
-            ));
-        dsl.getGlobalExtensions().addAll(Arrays.asList(
-                JavaNames.class,
-                DefaultEnglishPluralizer.class
-            ));
+    public Api1(Api4JScriptContext script) {
         
-        templates = new Templates(ctx.getTemplates(), true);
+        this.script = script;
+        templates = new Templates(script.getTemplates(), true);
+        initTemplates();
+    }
+    
+    private void initTemplates() {
+        Api4JConfiguration cfg = getConfiguration();
         String[] defaultTemplates = {
             "call", "staticCall",
             "delegator", "staticDelegator"};
@@ -40,177 +38,123 @@ public class Api1 extends DslNative implements AutoCloseable {
             templates.set(t, cfg.fmTemplate("org/cthul/api4j/api1/" + t + ".ftl"));
         }
     }
-
-    public Templates getTemplates() {
-        return templates;
+    
+    public Api4JConfiguration getConfiguration() {
+        return script.getConfiguration();
     }
 
     @Override
+    public <V> V configure(Closure<V> closure) {
+//        final ImportCustomizer ic = new ImportCustomizer();
+//        ic.addStaticStars(
+//                "org.cthul.api4j.api1.GeneralImports",
+//                "org.cthul.strings.JavaNames",
+//                "org.cthul.strings.Romans",
+//                "org.cthul.strings.AlphaIndex");
+//        final List<CompilationCustomizer> customizers = script.getEngine()
+//                .getScriptEngine().getConfig().getCompilationCustomizers();
+        return Globals.inNewContext(() -> {
+//            customizers.add(ic);
+            try {
+                Globals.put(this);
+                Globals.put(getConfiguration());
+                return DslUtils.tryClosureOn(this, closure,
+                        GeneralTools.class,
+                        QdoxTools.class);
+            } finally {
+//                customizers.remove(ic);
+            }
+        });
+    }
+    
+    public void run(Consumer<Api1> r) {
+        Globals.inNewContext(() -> {
+            Globals.put(this);
+            Globals.put(getConfiguration());
+            try {
+                r.accept(this);
+            } finally {
+                try {
+                    close();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return null;
+        });
+    }
+    
+    @Override
+    public synchronized void close() throws Exception {
+        closeables.stream().forEach(this::tryClose);
+        closeables.clear();
+        if (closeException != null) {
+            Exception e = closeException;
+            closeException = null;
+            throw e;
+        }
+    }
+    
+    private void tryClose(AutoCloseable ac) {
+        try {
+            ac.close();
+        } catch (Exception e) {
+            if (closeException != null) {
+                closeException.addSuppressed(e);
+            } else {
+                closeException = e;
+            }
+        }
+    }
+    
+    public synchronized void closeEventually(AutoCloseable ac) {
+        closeables.add(ac);
+    }
+    
+    public GeneratedClass createClass(String name) {
+        int iDot = name.indexOf('.');
+        if (iDot < 0) iDot = name.indexOf('\\');
+        if (iDot < 0) iDot = name.indexOf('/');
+        if (iDot == 0) {
+            name = name.substring(1);
+        } else if (iDot < 0) {
+            String uri = script.getUri();
+            int iSlash = uri.lastIndexOf('/');
+            if (iSlash < 0) iSlash = uri.lastIndexOf('\\');
+            if (iSlash < 0) iSlash = uri.length();
+            name = uri.substring(0, iSlash) + "." + name;
+        }
+        
+        GeneratedClass gc = getConfiguration().createClass(name);
+        closeEventually(gc);
+        return gc;
+    }
+    
+    public GeneratedClass createClass() {
+        String uri = script.getUri();
+        int dot = uri.indexOf('.');
+        if (dot > 0) {
+            return createClass(uri.substring(0, dot));
+        } else {
+            return createClass(uri);
+        }
+    }
+    
     protected Object methodMissing(String name, Object arg) {
         Object[] args = (Object[]) arg;
         if (name.contains(".") 
                 && args != null && args.length == 1
                 && (args[0] instanceof Closure)) {
-            return new GenerateTask(name, (Closure<?>) args[0]);
+            return new NamedClosure<>(name, (Closure<?>) args[0]);
         }
-        return super.methodMissing(name, arg);
+        throw new MissingMethodException(name, getClass(), (Object[]) arg);
     }
 
-    public ScriptContext getContext() {
-        return ctx;
+    public Templates getTemplates() {
+        return templates;
     }
     
-    public Api4JConfiguration getConfiguration() {
-        return ctx.getConfiguration();
-    }
-
-    @Override
-    public GroovyDsl dsl() {
-        return dsl;
-    }
-    
-    public Object configure(Closure<?> c) {
-        try {
-            return DslUtils.configure(dsl(), this, c);
-        } finally {
-            close();
-        }
-    }
-    
-//    public GeneratedClass generateClass(String name) {
-//        ClassGenerator cg = getConfiguration().generateClass(dsl(), name);
-//        return new GeneratedClass(dsl(), cg, name);
-//    }
-    
-    public GeneratedClass generateClass(String name) {
-        GeneratedClass gc = getConfiguration().generateClass(name);
-        closeEventually(gc);
-        return gc;
-    }
-    
-    public Object generateClass(String name, Closure<?> closure) {
-        return generateClass(name).configure(dsl(), closure);
-    }
-
-    public GeneratedClass generateClass() {
-        String uri = ctx.getUri();
-        int dot = uri.indexOf('.');
-        if (dot > 0) {
-            return generateClass(uri.substring(0, dot));
-        } else {
-            return generateClass(uri);
-        }
-    }
-    
-    public Object generateClass(Closure<?> closure) {
-        return generateClass().configure(dsl(), closure);
-    }
-
-    public void closeEventually(AutoCloseable c) {
-        closeables.add(c);
-    }
-    
-    @Override
-    public void close() {
-        Exception lastEx = null;
-        for (AutoCloseable c: closeables) {
-            try {
-                c.close();
-            } catch (Exception e) {
-                if (lastEx != null) {
-                    e.addSuppressed(lastEx);
-                }
-                lastEx = e;
-            }
-        }
-        closeables.clear();
-        if (lastEx != null) {
-            throw new RuntimeException(lastEx);
-        }
+    public Template getTemplate(String uri) {
+        return getTemplates().get(uri);
     }
 }
-//=======
-//package org.cthul.api4j.api1;
-//
-//import groovy.lang.Closure;
-//import java.util.Arrays;
-//import org.cthul.api4j.api.Generator;
-//import org.cthul.api4j.api.Templates;
-//import org.cthul.api4j.gen.GeneratorUtils;
-//import org.cthul.api4j.groovy.DslNative;
-//import org.cthul.api4j.groovy.DslUtils;
-//import org.cthul.api4j.groovy.GroovyDsl;
-//
-//public class Api1 extends DslNative {
-//    
-//    private final Api4JConfiguration g;
-//    private final GroovyDsl dsl;
-//    private final Templates templates;
-//    private final String uri;
-//
-//    @SuppressWarnings("LeakingThisInConstructor")
-//    public Api1(Api4JConfiguration g, String uri) {
-//        this.g = g;
-//        this.uri = uri;
-//        dsl = new GroovyDsl();
-//        dsl.addGlobals(g, dsl, this);
-//        dsl.getExtensions().addAll(Arrays.asList(
-//                GlobalExt.class,
-//                QdoxExt.class
-//                ));
-//        templates = new Templates(g.getTemplates());
-//        String[] defTemplates = {"delegator", "fields", "full_comment", 
-//                    "getter", "initializer", "staticDelegator"};
-//        for (String t: defTemplates) {
-//            templates.set(t, g.fmTemplate("org/cthul/api4j/api1/" + t + ".ftl"));
-//        }
-//    }
-//
-//    //    public DslList<JavaClass> classes(List<String> patterns) {
-//    //        DslList<JavaClass> result = new DslList<>(dsl());
-//    //        for (String s: patterns) {
-//    //            JavaClass jc = g.getQdox().getClassByName(s);
-//    //            result.addValue(jc);
-//    //        }
-//    //        return result;
-//    //    }
-//    //
-//    //    public DslList<JavaClass> classes(String... patterns) {
-//    ////        PatternSearcher s = PatternSearcher.forPatterns(patterns);
-//    ////        List<JavaClass> list = gen.getQdox().search(s);
-//    ////        return new DslList<>(dsl(), list);
-//    //        return classes(Arrays.asList(patterns));
-//    //    }
-//    @Override
-//    protected Object methodMissing(String name, Object arg) {
-//        Object[] args = (Object[]) arg;
-//        if (name.contains(".") 
-//                && args != null && args.length == 1
-//                && (args[0] instanceof Closure)) {
-//            return new GenerateTask(name, (Closure<?>) args[0]);
-//        }
-//        return super.methodMissing(name, arg); //To change body of generated methods, choose Tools | Templates.
-//    }
-//
-//    public Api4JConfiguration getGenerator() {
-//        return g;
-//    }
-//
-//    public Templates getTemplates() {
-//        return templates;
-//    }
-//    
-//    public String getDefaultClassName() {
-//        return GeneratorUtils.classNameForPath(uri);
-//    }
-//    
-//    @Override
-//    public GroovyDsl dsl() {
-//        return dsl;
-//    }
-//    
-//    public Object configure(Closure<?> c) {
-//        return DslUtils.configure(dsl(), this, c);
-//    }
-//}
-//>>>>>>> ab04573103cb1c0605321368b157bdb1e583e6ff

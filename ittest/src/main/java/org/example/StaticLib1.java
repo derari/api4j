@@ -10,6 +10,14 @@ public class StaticLib1 {
         return (X) o;
     }
     
+    /**
+     * Maps Ks to Vs.
+     * @param <K>
+     * @param <V>
+     * @param key
+     * @param value
+     * @return a map
+     */
     @Factory
     public static <K, V> Map<K, V> map(K key, V value) {
         Map<K, V> map = new HashMap<>();

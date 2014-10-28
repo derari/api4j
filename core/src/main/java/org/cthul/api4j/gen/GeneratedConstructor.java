@@ -8,19 +8,25 @@ import static org.cthul.api4j.gen.GeneratedModel.copyAll;
 
 public class GeneratedConstructor extends DefaultJavaConstructor {
     
+    {
+        setModifiers(new ModifierList());
+        setParameters(new LinkedList<>());
+        setTags(new DocTagList(true));
+        setTypeParameters(new TypeParameterList<>(this));
+        setAnnotations(new AnnotationList());
+    }
+    
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public GeneratedConstructor() {
-        setModifiers(new ModifierList("public"));
-        setTags(Collections.<DocletTag>emptyList());
-        setParameters(new LinkedList<JavaParameter>());
+        getModifiers().add("public");
     }
     
     @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
     public GeneratedConstructor(JavaMethod source) {
         this();
         setComment(source.getComment());
-        setTags(copyAll(source.getTags(), this, COPY_TAG));
-        setParameters(GeneratedModel.copyAll(source.getParameters(), GeneratedModel.COPY_PARAMETER));
+        getTags().addAll(copyAll(source.getTags(), this, COPY_TAG));
+        getParameters().addAll(copyAll(source.getParameters(), GeneratedModel.COPY_PARAMETER));
     }
 
     @Override
@@ -36,17 +42,5 @@ public class GeneratedConstructor extends DefaultJavaConstructor {
         } else {
             super.setParameters(javaParameters);
         }
-    }
-
-    @Override
-    public void setTags(List<DocletTag> tagList) {
-        tagList = new LinkedList<>(tagList);
-        for (Iterator<DocletTag> it = tagList.iterator(); it.hasNext(); ) {
-            DocletTag tag = it.next();
-            if ("return".equals(tag.getName())) {
-                it.remove();
-            }
-        }
-        super.setTags(tagList);
     }
 }

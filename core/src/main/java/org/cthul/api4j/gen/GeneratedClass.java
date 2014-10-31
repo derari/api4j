@@ -56,6 +56,11 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, C
 //        }
 //        super.setParentClass(parentClass);
 //    }
+    @Override
+    public void setComment(String comment) {
+        if (comment != null) comment = comment.replaceAll("<([^>]+)/>", "<$1>");
+        super.setComment(comment);
+    }
     
     @Override
     public void setImplementz(List<JavaClass> implementz) {

@@ -57,6 +57,12 @@ public class GeneratedMethod extends DefaultJavaMethod {
         if (params.isEmpty()) return false;
         return params.get( params.size() -1 ).isVarArgs();
     }
+
+    @Override
+    public void setComment(String comment) {
+        if (comment != null) comment = comment.replaceAll("<([^>]+)/>", "<$1>");
+        super.setComment(comment);
+    }
     
     @Override
     public void setParameters(List<JavaParameter> javaParameters) {

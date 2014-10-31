@@ -100,16 +100,16 @@ public class Api4JEngine extends DSLEngine {
         DirectoryStream.Filter<Path> filter = entry -> {
             if (Files.isDirectory(entry)) return true;
             entry = dir.relativize(entry);
-            System.out.println("? " + entry);
+//            System.out.println("? " + entry);
             for (PathMatcher pm: em) {
                 if (pm.matches(entry)) {
-                    System.out.println(" - " + pm);
+//                    System.out.println(" - " + pm);
                     return false;
                 }
             }
             for (PathMatcher pm: im) {
                 if (pm.matches(entry)) {
-                    System.out.println(" + " + pm);
+//                    System.out.println(" + " + pm);
                     return true;
                 }
             }
@@ -121,7 +121,7 @@ public class Api4JEngine extends DSLEngine {
     private void run(Path root, Path current, DirectoryStream.Filter<Path> filter, boolean recreate) throws Exception {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(current, filter)) {
             for (Path file: stream) {
-                System.out.println("! " + file);
+//                System.out.println("! " + file);
                 if (Files.isDirectory(file)) {
                     run(root, file, filter, recreate);
                 } else {

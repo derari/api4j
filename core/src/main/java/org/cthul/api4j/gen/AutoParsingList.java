@@ -43,5 +43,10 @@ public abstract class AutoParsingList<E> extends AbstractList<E> {
     @Override
     public int size() {
         return list.size();
-    }    
+    }
+
+    @Override
+    public E remove(int index) {
+        return list.remove(index);
+    }
 }

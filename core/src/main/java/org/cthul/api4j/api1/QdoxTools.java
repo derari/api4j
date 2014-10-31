@@ -49,7 +49,7 @@ public class QdoxTools {
     }
     
     public static List<JavaMethod> allMethods(Collection<JavaClass> classes) {
-        return classes.stream().flatMap((jc) -> jc.getMethods(true).stream())
+        return classes.stream().flatMap((jc) -> jc.getMethods(false).stream())
                 .collect(ArrayList::new, List::add, List::addAll);
     }
     
@@ -72,7 +72,7 @@ public class QdoxTools {
     }
     
     public static Collection<JavaMethod> getAllMethods(JavaClass clazz) {
-        return clazz.getMethods(true);
+        return clazz.getMethods(false);
     }
     
     public static Collection<JavaMethod> getAllMethods(Collection<JavaClass> classes) {
@@ -513,6 +513,7 @@ public class QdoxTools {
             m.setSourceCode(null);
         } else {
             String text = body.toString().trim();
+            if (text.isEmpty()) text = " ";
             if (!text.isEmpty()) text += "\n";
             m.setSourceCode(text);
         }
@@ -662,18 +663,59 @@ public class QdoxTools {
     public static String getDocReference(JavaMember jm) {
         String name = jm.getDeclaringClass().getCanonicalName() + "#" 
                 + jm.getName();
-        String sig;
+        if (!(jm instanceof ParameterDeclarator)) return name;
+        List<JavaParameter> params;
+        List<? extends JavaTypeVariable<?>> vars;
         if (jm instanceof JavaMethod) {
-            sig = getSignatureString((JavaMethod) jm);
-        } else if (jm instanceof JavaConstructor) {
-            sig = getSignatureString((JavaConstructor) jm);
+            params = ((JavaMethod) jm).getParameters();
+            vars = ((JavaMethod) jm).getTypeParameters();
         } else {
-            return name;
+            params = ((JavaConstructor) jm).getParameters();
+            vars = ((JavaConstructor) jm).getTypeParameters();
         }
-        return name + "(" + sig + ")";
+        if (params.isEmpty()) return name + "()";
+        StringBuilder sig = new StringBuilder(name).append('(');
+        for (JavaParameter jp: params) {
+            JavaType jt = jp.getType();
+            String pType = jt.getCanonicalName();
+            boolean generic = false;
+            if (!vars.isEmpty() && !pType.contains(".")) {
+                for (JavaTypeVariable<?> v: vars) {
+                    if (v.getName().equals(pType)) {
+                        List<JavaType> bounds = v.getBounds();
+                        if (bounds == null || bounds.isEmpty()) sig.append("java.lang.Object");
+                        else sig.append(bounds.get(0).getCanonicalName());
+                        generic = true;
+                        break;
+                    }
+                }
+            }
+            if (!generic) {
+                sig.append(jt.getCanonicalName());
+            }
+            if (jp.isVarArgs()) {
+                sig.append("...");
+            }
+            
+            sig.append(',');
+        }
+        sig.setLength(sig.length()-1);
+        return sig.append(')').toString();
     }
     
     //</editor-fold>
+    
+    public static void add(List<?> autoParsingList, String string) {
+        ((List) autoParsingList).add(string);
+    }
+    
+    public static void addAll(List<?> autoParsingList, Collection<String> string) {
+        ((List) autoParsingList).addAll(string);
+    }
+    
+    public static void addAll(List<?> autoParsingList, String... string) {
+        addAll(autoParsingList, Arrays.asList(string));
+    }
     
     public static JavaType withArgs(JavaClass jc, String... args) {
 //        DefaultJavaParameterizedType pt = new DefaultJavaParameterizedType(jc.getName(), jc);

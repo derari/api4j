@@ -36,6 +36,12 @@ public class GeneratedConstructor extends DefaultJavaConstructor {
     }
     
     @Override
+    public void setComment(String comment) {
+        if (comment != null) comment = comment.replaceAll("<([^>]+)/>", "<$1>");
+        super.setComment(comment);
+    }
+    
+    @Override
     public void setParameters(List<JavaParameter> javaParameters) {
         if (javaParameters.isEmpty()) {
             GeneratedMethod.injectParameters(this, javaParameters);

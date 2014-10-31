@@ -36,4 +36,16 @@ public class StaticTestClass1 {
     public static <A> List<A>[] allTheLists(List<Reference<? super A>> src, int count) {
         return null;
     }
+    
+    @AtSource
+    @AtRuntime
+    public static <X> void x(X x) { }
+    
+    @AtSource
+    @AtRuntime
+    public static <R extends Runnable> void r(R r) { }
+    
+    @AtSource
+    @AtRuntime
+    public static <L extends List & Runnable> void l(L l) { }
 }

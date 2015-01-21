@@ -1,5 +1,6 @@
 package org.cthul.api4j.api1;
 
+import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.AbstractBaseJavaEntity;
 import com.thoughtworks.qdox.model.impl.AbstractBaseMethod;
@@ -10,6 +11,7 @@ import com.thoughtworks.qdox.model.impl.DefaultJavaConstructor;
 import com.thoughtworks.qdox.model.impl.DefaultJavaField;
 import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameter;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 import com.thoughtworks.qdox.model.impl.DefaultJavaTypeVariable;
 import groovy.lang.Closure;
 import java.util.*;
@@ -27,6 +29,10 @@ import org.cthul.strings.JavaNames;
 
 public class QdoxTools {
     
+    public static JavaProjectBuilder getQdox() {
+        return cfg().getQdox();
+    }
+    
     private static Api4JConfiguration cfg() {
         return Globals.getExisting(Api4JConfiguration.class);
     }
@@ -43,6 +49,17 @@ public class QdoxTools {
     
     public static List<JavaClass> asClasses(Collection<?> classNames) {
         return GeneralTools.instance().classes(
+                classNames.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.toList()));
+    }
+    
+    public static JavaClass asType(String className) {
+        return GeneralTools.instance().asType(className);
+    }
+    
+    public static List<JavaClass> asTypes(Collection<?> classNames) {
+        return GeneralTools.instance().types(
                 classNames.stream()
                         .map(Object::toString)
                         .collect(Collectors.toList()));
@@ -273,7 +290,7 @@ public class QdoxTools {
     private static MultiConfigFluent<GeneratedConstructor> cfgConstructor(JavaClass jc, Object... args) {
         return new ConfigArgs<>(JavaMethod.class, args)
                 .all(() -> constructor(jc), (jm) -> constructor(jc, jm))
-                .withString(QdoxTools::setModifiers)
+                .withString(QdoxTools::setDeclaration)
                 .withProperties(QdoxTools::constructorProperties)
                 .closureWithTemplate(DslUtils::configureWith);
     }
@@ -408,7 +425,14 @@ public class QdoxTools {
                 .property("modifiers", QdoxTools::setModifiers)
                 .property("returns", QdoxTools::setReturns)
                 .property("body", QdoxTools::setBody)
+                .property("see", QdoxTools::methodSeeTag)
                 .remaining(DslUtils::applyProperties);
+    }
+    
+    private static void methodSeeTag(DefaultJavaMethod meth, Object value) {
+        if (value == Boolean.FALSE) {
+            meth.getTags().remove(meth.getTags().size()-1);
+        }
     }
     
     public static void getterProperties(DefaultJavaMethod getter, Map<String, Object> properties) {
@@ -459,7 +483,7 @@ public class QdoxTools {
             decl = decl.substring(0, iOpen);
         }
         int iSpace = decl.length();
-        if (entity instanceof AbstractJavaEntity) {
+        if (!(entity instanceof JavaConstructor) && (entity instanceof AbstractJavaEntity)) {
             iSpace = decl.lastIndexOf(' ');
             ((AbstractJavaEntity) entity).setName(decl.substring(iSpace+1));
             if (iSpace > 0) {
@@ -654,15 +678,8 @@ public class QdoxTools {
         return ParameterStringDirective.SIGNATURE.build(jc.getParameters(), replace);
     }
     
-    /**
-     * 
-     * @param jm
-     * @return 
-     * @see ArrayList#ArrayList(int) 
-     */
-    public static String getDocReference(JavaMember jm) {
-        String name = jm.getDeclaringClass().getCanonicalName() + "#" 
-                + jm.getName();
+    public static String getShortDocReference(JavaMember jm) {
+        String name = "#" + jm.getName();
         if (!(jm instanceof ParameterDeclarator)) return name;
         List<JavaParameter> params;
         List<? extends JavaTypeVariable<?>> vars;
@@ -702,6 +719,10 @@ public class QdoxTools {
         sig.setLength(sig.length()-1);
         return sig.append(')').toString();
     }
+
+    public static String getDocReference(JavaMember jm) {
+        return jm.getDeclaringClass().getCanonicalName() + getShortDocReference(jm);
+    }
     
     //</editor-fold>
     
@@ -717,18 +738,129 @@ public class QdoxTools {
         addAll(autoParsingList, Arrays.asList(string));
     }
     
-    public static JavaType withArgs(JavaClass jc, String... args) {
-//        DefaultJavaParameterizedType pt = new DefaultJavaParameterizedType(jc.getName(), jc);
-//        pt.setActualArgumentTypes(new ArrayList<>(4));
-//        for (String a: args) {
-//            pt.getActualTypeArguments().add(asClass(a));
-//        }
+    public static JavaType withArgs(JavaClass jc, Collection<?> args) {
+        return withArgs(jc, args.toArray());
+    }
+    
+    public static JavaType withArgs(JavaClass jc, Object... args) {
         StringBuilder sb = new StringBuilder(jc.getCanonicalName());
         sb.append('<');
-        for (String a: args) sb.append(a).append(", ");
+        for (Object a: args) {
+            if (a instanceof JavaClass) {
+                a = ((JavaClass) a).getGenericFullyQualifiedName();
+            }
+            sb.append(a).append(", ");
+        }
         sb.setLength(sb.length()-2);
         sb.append('>');
-        return cfg().getQdox().getClassByName(sb.toString());
+        return asType(sb.toString());
+    }
+    
+    public static JavaType resolveTypeArgument(JavaClass actualType, JavaClass parentType, int parameterIndex) {
+        if (!actualType.isA(parentType)) {
+            throw new IllegalArgumentException(
+                    actualType + " is not a " + parentType);
+        } 
+        return resolveTypeArg(actualType, parentType, parameterIndex).getType();
+    }
+    
+    public static JavaType resolveReturnTypeArgument(JavaMethod method, JavaClass parentType, int parameterIndex) {
+        JavaClass actualType = method.getReturns();
+        if (!actualType.isA(parentType)) {
+            throw new IllegalArgumentException(
+                    actualType + " is not a " + parentType);
+        } 
+        ArgResolvingResult result = resolveTypeArg(actualType, parentType, parameterIndex);
+        return result.resolve(method).getType();
+    }
+    
+    private static ArgResolvingResult resolveTypeArg(JavaClass actualType, JavaClass parentType, int parameterIndex) {
+        if (actualType.getFullyQualifiedName().equals(parentType.getFullyQualifiedName())) {
+            DefaultJavaParameterizedType jp = (DefaultJavaParameterizedType) actualType;
+            JavaType t = jp.getActualTypeArguments().get(parameterIndex);
+            return new ArgResolvingResult(t);
+        } else {
+            ArgResolvingResult r = null;
+            JavaClass sup = actualType.getSuperJavaClass();
+            if (sup != null && sup.isA(parentType)) {
+                r = resolveTypeArg(sup, parentType, parameterIndex);
+            }
+            if (r == null) {
+                for (JavaClass iface: actualType.getInterfaces()) {
+                    if (iface.isA(parentType)) {
+                        r = resolveTypeArg(iface, parentType, parameterIndex);
+                        break;
+                    }
+                }
+            }
+            if (r == null) return new ArgResolvingResult(asClass("java.lang.Object"));
+            return r.resolve(actualType);
+        }
+    }
+    
+    static class ArgResolvingResult {
+        JavaType type;
+        public ArgResolvingResult(JavaType type) {
+            this.type = type;
+        }
+
+        public JavaType getType() {
+            String name = type.getFullyQualifiedName();
+            if (name.startsWith("? extends ")) {
+                name = name.substring("? extends ".length()).trim();
+                return asType(name);
+            }
+//            int iExtends = name.indexOf(" extends ");
+//            if (iExtends > 0) {
+//                return asType(name.substring(iExtends+9));
+//            }
+            if (name.contains(" super ")) {
+                return asClass("java.lang.Object");
+            }
+            return type;
+        }
+
+        public ArgResolvingResult resolve(JavaClass actualType) {
+            String name = type.getFullyQualifiedName();
+            if (name.contains(".")) return this;
+            int i = parameterIndex(name, actualType.getTypeParameters());
+            if (i < 0) return this;
+            DefaultJavaParameterizedType jp = (DefaultJavaParameterizedType) actualType;
+            JavaType jt = jp.getActualTypeArguments().get(i);
+            return new ArgResolvingResult(jt);
+        }
+
+        private ArgResolvingResult resolve(JavaMethod method) {
+            String name = type.getFullyQualifiedName();
+            if (name.contains(".")) return this;
+            int i = parameterIndex(name, method.getTypeParameters());
+            if (i < 0) return this;
+            JavaTypeVariable<?> v = method.getTypeParameters().get(i);
+            JavaType bound;
+            if (v.getBounds() == null) {
+                bound = asClass("java.lang.Object");
+            } else {
+                bound = v.getBounds().get(0);
+            }
+            if (v.getName().equals("?")) {
+                return new ArgResolvingResult(bound);
+            }
+            return new ArgResolvingResult(asClass(v.getName() + " extends " + bound.getGenericFullyQualifiedName()));
+        }
+        
+        private int parameterIndex(String name, List<? extends JavaTypeVariable<?>> typeParams) {
+            int i = 0;
+            for (JavaTypeVariable<?> tv: typeParams) {
+                String varName = tv.getName().trim();
+                int iSpace = varName.indexOf(' ');
+                if (iSpace > 0) varName = varName.substring(0, iSpace);
+                if (name.equals(varName)) {
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        }
     }
     
     private static void expectNoString(Object o, String s) {

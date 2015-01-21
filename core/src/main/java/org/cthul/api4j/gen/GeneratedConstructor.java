@@ -49,4 +49,20 @@ public class GeneratedConstructor extends DefaultJavaConstructor {
             super.setParameters(javaParameters);
         }
     }
+    
+    
+    @Override
+    public TypeParameterList<JavaConstructor, JavaTypeVariable<JavaConstructor>> getTypeParameters() {
+        return TypeParameterList.wrap(this, super.getTypeParameters());
+    }
+
+    @Override
+    public DocTagList getTags() {
+        return DocTagList.wrap(super.getTags());
+    }
+
+    @Override
+    public AnnotationList getAnnotations() {
+        return AnnotationList.wrap(super.getAnnotations());
+    }
 }

@@ -1,22 +1,12 @@
 package org.cthul.api4j.xml;
 
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaMethod;
-import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 import org.cthul.api4j.Api4JConfiguration;
-import org.cthul.api4j.api.Template;
 import org.cthul.api4j.api1.Api1;
-import static org.cthul.api4j.api1.QdoxTools.*;
-import org.cthul.api4j.gen.GeneratedClass;
-import org.cthul.api4j.gen.GeneratedMethod;
 
 public class HamcrestXmlConfig implements XmlConfiguration {
 
@@ -49,50 +39,9 @@ public class HamcrestXmlConfig implements XmlConfiguration {
             xml.close();
             in.close();
             
-            //cfg.getQdox().addClassLoader(getClass().getClassLoader());
-            new Api1(cfg.getRootContext().subcontext(path)).run((api) -> {
-                List<JavaClass> qdoxClasses = asClasses(classNames);
-                Map<String, Object> argMap = new HashMap<>();
-                Template staticDelegator = api.getTemplate("staticDelegator");
-
-                GeneratedClass cg = api.createClass();
-                for (JavaClass sourceClass: qdoxClasses) {
-                    boolean factoryFound = false;
-                    for (JavaMethod sourceMethod: sourceClass.getMethods()) {
-                        if (hasAnnotation(sourceMethod, ".Factory")) {
-                            factoryFound = true;
-                            GeneratedMethod newMethod = method(cg, sourceMethod);
-                            argMap.put("method", sourceMethod);
-                            setBody(newMethod, staticDelegator.generate(argMap));
-                        }
-                    }
-                    if (!factoryFound) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("No factory methods in ")
-                                .append(sourceClass.getCanonicalName())
-                                .append(".");
-                        for (JavaMethod jm: sourceClass.getMethods()) {
-                            if (jm.isStatic()) {
-                                sb.append("\n- ");
-                                try {
-                                    sb.append(jm);
-                                } catch (Exception e) {
-                                    try {
-                                        sb.append(jm.getDeclarationSignature(true));
-                                    } catch (Exception e2) {
-                                        try {
-                                            sb.append(jm.getName());
-                                        } catch (Exception e3) {
-                                            sb.append(e);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        throw new RuntimeException(sb.toString());
-                    }
-                }
-            });
+            HamcrestGenerator gen = new HamcrestGenerator(classNames);
+            Api1 api1 = new Api1(cfg.getRootContext().subcontext(path));
+            api1.run(gen::generate);
         }
     }
 }

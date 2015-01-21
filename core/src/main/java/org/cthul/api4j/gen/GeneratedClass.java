@@ -7,6 +7,7 @@ import com.thoughtworks.qdox.model.JavaPackage;
 import com.thoughtworks.qdox.model.JavaType;
 import com.thoughtworks.qdox.model.impl.DefaultJavaClass;
 import com.thoughtworks.qdox.model.impl.DefaultJavaPackage;
+import com.thoughtworks.qdox.model.impl.DefaultJavaTypeVariable;
 import java.io.*;
 import java.util.List;
 import org.cthul.api4j.groovy.*;
@@ -14,7 +15,7 @@ import org.cthul.api4j.groovy.*;
 public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, ClosureConfigurable {
 
     private final File file;
-    private List<JavaClass> implementz;
+    private JavaClassList implementz;
     
     private void init(JavaProjectBuilder qdox) {
         setModifiers(new ModifierList());
@@ -64,23 +65,38 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, C
     
     @Override
     public void setImplementz(List<JavaClass> implementz) {
-        this.implementz = implementz;
-        super.setImplementz(implementz);
+        this.implementz = JavaClassList.wrap(implementz);
+        super.setImplementz(this.implementz);
     }
 
     @Override
-    public List<JavaClass> getImplementedInterfaces() {
+    public JavaClassList getImplementedInterfaces() {
         return implementz;
     }
 
     @Override
-    public List<JavaClass> getInterfaces() {
+    public JavaClassList getInterfaces() {
         return implementz;
     }
 
     @Override
     public List<JavaType> getImplements() {
         return (List) implementz;
+    }
+
+    @Override
+    public TypeParameterList<JavaClass, DefaultJavaTypeVariable<JavaClass>> getTypeParameters() {
+        return TypeParameterList.wrap(this, super.getTypeParameters());
+    }
+
+    @Override
+    public DocTagList getTags() {
+        return DocTagList.wrap(super.getTags());
+    }
+
+    @Override
+    public AnnotationList getAnnotations() {
+        return AnnotationList.wrap(super.getAnnotations());
     }
     
     @Override
@@ -89,7 +105,15 @@ public class GeneratedClass extends DefaultJavaClass implements AutoCloseable, C
             ClassLibrary cl = super.getJavaClassLibrary();
             if (cl != null) return cl;
         }
-        return getPackage().getJavaClassLibrary();
+        if (getPackage() != null) {
+            ClassLibrary cl = getPackage().getJavaClassLibrary();
+            if (cl != null) return cl;
+        }
+        if (getDeclaringClass() != null) {
+            ClassLibrary cl = getDeclaringClass().getJavaClassLibrary();
+            if (cl != null) return cl;
+        }
+        return null;
     }
 
     @Override

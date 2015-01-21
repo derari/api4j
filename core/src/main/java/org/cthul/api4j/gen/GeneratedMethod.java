@@ -31,7 +31,7 @@ public class GeneratedMethod extends DefaultJavaMethod {
         super(returns, name);
     }
     
-    @SuppressWarnings("LeakingThisInConstructor")
+    @SuppressWarnings({"LeakingThisInConstructor", "OverridableMethodCallInConstructor"})
     public GeneratedMethod(JavaClass parent, JavaMethod source) {
         super(source.getName());
         setParentClass(parent);
@@ -72,6 +72,25 @@ public class GeneratedMethod extends DefaultJavaMethod {
         } else {
             super.setParameters(javaParameters);
         }
+    }
+    
+    public void setBody(Object body) {
+        QdoxTools.setBody(this, body);
+    }
+    
+    @Override
+    public TypeParameterList<JavaMethod, JavaTypeVariable<JavaMethod>> getTypeParameters() {
+        return TypeParameterList.wrap(this, super.getTypeParameters());
+    }
+
+    @Override
+    public DocTagList getTags() {
+        return DocTagList.wrap(super.getTags());
+    }
+
+    @Override
+    public AnnotationList getAnnotations() {
+        return AnnotationList.wrap(super.getAnnotations());
     }
     
     static void injectParameters(AbstractBaseMethod m, List<JavaParameter> params) {

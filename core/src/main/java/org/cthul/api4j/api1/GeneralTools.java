@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.objects.instance.Inject;
@@ -58,6 +59,18 @@ public class GeneralTools {
         return instance().asClass(pattern);
     }
     
+    public static List<JavaClass> types(Object __, Collection<String> patterns) {
+        return instance().types(patterns);
+    }
+    
+    public static List<JavaClass> types(Object __, String... patterns) {
+        return instance().types(patterns);
+    }
+    
+    public static JavaClass asType(Object __, String pattern) {
+        return instance().asType(pattern);
+    }
+    
     public static String mod(String s, Collection<?> args) {
         return format(s, args.toArray());
     }
@@ -82,20 +95,28 @@ public class GeneralTools {
     }
     
     public List<JavaClass> classes(Collection<String> patterns) {
-        List<JavaClass> result = new ArrayList<>();
-        patterns.stream().forEach((s) -> {
-            result.add(asClass(s));
-        });
-        return result;
+        return patterns.stream().map(this::asClass).collect(Collectors.toList());
     }
     
     public List<JavaClass> classes(String... patterns) {
         return classes(Arrays.asList(patterns));
     }
     
+    public List<JavaClass> types(Collection<String> patterns) {
+        return patterns.stream().map(this::asType).collect(Collectors.toList());
+    }
+    
+    public List<JavaClass> types(String... patterns) {
+        return types(Arrays.asList(patterns));
+    }
+    
     public JavaClass asClass(String pattern) {
         int i = pattern.indexOf('<');
         if (i > 0) pattern = pattern.substring(0, i);
+        return asType(pattern);
+    }
+    
+    public JavaClass asType(String pattern) {
         return cfg.getQdox().getClassByName(pattern);
     }
 }

@@ -2,6 +2,7 @@ package org.cthul.api4j.gen;
 
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaType;
 import java.util.List;
 import org.cthul.api4j.api1.QdoxTools;
 
@@ -29,6 +30,10 @@ public class JavaClassList extends AutoParsingList<JavaClass> {
         this(null);
     }
 
+    public boolean add(JavaType e) {
+        return super.add((JavaClass) e);
+    }
+    
     public JavaClassList(JavaProjectBuilder qdox, List<JavaClass> list) {
         super(list);
         this.qdox = qdox;

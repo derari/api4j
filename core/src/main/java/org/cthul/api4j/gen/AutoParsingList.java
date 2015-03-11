@@ -23,4 +23,8 @@ public abstract class AutoParsingList<E> extends AutoParsingListBase<E> {
     public boolean addAll(Object[] o) {
         return smartAdd(o);
     }
+    
+    public boolean addAll(String... s) {
+        return smartAdd(s);
+    }
 }

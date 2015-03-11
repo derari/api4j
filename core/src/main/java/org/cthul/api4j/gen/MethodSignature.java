@@ -24,16 +24,16 @@ public class MethodSignature extends GroovyObjectSupport {
             int typeEnd = nextParameterType(s, n);
             int nameEnd = s.indexOf(',', typeEnd);
             if (nameEnd < 0) nameEnd = s.length();
-            JavaClass jc = qdox.getClassByName(s.substring(n, typeEnd));
-            JavaParameter jp = new DefaultJavaParameter(jc, s.substring(typeEnd+1, nameEnd));
+            JavaClass jc = qdox.getClassByName(s.substring(n, typeEnd).trim());
+            JavaParameter jp = new DefaultJavaParameter(jc, s.substring(typeEnd+1, nameEnd).trim());
             m.getParameters().add(jp);
             n = nameEnd+1;
         }
     }
     
     private int nextParameterType(String s, int n) {
-        int iSpace = s.indexOf(' ');
-        int iOpen = s.indexOf('<');
+        int iSpace = s.indexOf(' ', n);
+        int iOpen = s.indexOf('<', n);
         if (iOpen > -1 && iOpen < iSpace) {
             int iClose = endOfGenericArg(s, iOpen);
             iSpace = s.indexOf(' ', iClose);

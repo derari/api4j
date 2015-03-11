@@ -743,6 +743,7 @@ public class QdoxTools {
     }
     
     public static JavaType withArgs(JavaClass jc, Object... args) {
+        if (args.length == 0) return jc;
         StringBuilder sb = new StringBuilder(jc.getCanonicalName());
         sb.append('<');
         for (Object a: args) {

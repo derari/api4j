@@ -3,6 +3,7 @@ package org.cthul.api4j.api;
 import com.thoughtworks.qdox.Searcher;
 import com.thoughtworks.qdox.model.JavaClass;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,6 +11,11 @@ import java.util.regex.Pattern;
 public class PatternSearcher implements Searcher, Predicate<JavaClass> {
     
     private static final Pattern SYNTAX = Pattern.compile("[.]{1,2}|[/]{1,2}|[*]{1,2}");
+
+    public static boolean isPattern(String pattern) {
+        return pattern.startsWith(".") || pattern.contains("..") ||
+                pattern.contains("/") || pattern.contains("*");
+    }
     
     public static Pattern compile(String pattern) {
         StringBuilder sb = new StringBuilder();
@@ -41,6 +47,10 @@ public class PatternSearcher implements Searcher, Predicate<JavaClass> {
         }
         sb.append(pattern, p, pattern.length());
         return Pattern.compile(sb.toString());
+    }
+    
+    public static PatternSearcher forPatterns(Collection<String> patterns) {
+        return forPatterns(patterns.toArray(new String[patterns.size()]));
     }
     
     public static PatternSearcher forPatterns(String... patterns) {

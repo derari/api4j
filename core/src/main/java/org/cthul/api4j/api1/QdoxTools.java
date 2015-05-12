@@ -27,8 +27,16 @@ import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.NamedClosure;
 import org.cthul.strings.JavaNames;
 
+/**
+ * Utility methods related to the Java class model, 
+ * intended for static import in Groovy and Java scripts.
+ */
 public class QdoxTools {
     
+    /**
+     * Returns the current Qdox instance.
+     * @return java project builder
+     */
     public static JavaProjectBuilder getQdox() {
         return cfg().getQdox();
     }
@@ -43,10 +51,16 @@ public class QdoxTools {
     }
     
     //<editor-fold defaultstate="collapsed" desc="Collection Utils">
+    /**
+     * @see GeneralTools#asClass(java.lang.String) 
+     */
     public static JavaClass asClass(String className) {
         return GeneralTools.instance().asClass(className);
     }
     
+    /**
+     * @see GeneralTools#classes(java.util.Collection) 
+     */
     public static List<JavaClass> asClasses(Collection<?> classNames) {
         return GeneralTools.instance().classes(
                 classNames.stream()
@@ -54,10 +68,16 @@ public class QdoxTools {
                         .collect(Collectors.toList()));
     }
     
+    /**
+     * @see GeneralTools#asType(java.lang.String) 
+     */
     public static JavaClass asType(String className) {
         return GeneralTools.instance().asType(className);
     }
     
+    /**
+     * @see GeneralTools#types(java.util.Collection) 
+     */
     public static List<JavaClass> asTypes(Collection<?> classNames) {
         return GeneralTools.instance().types(
                 classNames.stream()
@@ -65,16 +85,31 @@ public class QdoxTools {
                         .collect(Collectors.toList()));
     }
     
+    /**
+     * Returns a flat list of all methods of {@code classes}
+     * @param classes
+     * @return methods
+     */
     public static List<JavaMethod> allMethods(Collection<JavaClass> classes) {
         return classes.stream().flatMap((jc) -> jc.getMethods(false).stream())
                 .collect(ArrayList::new, List::add, List::addAll);
     }
     
+    /**
+     * Returns a flat list of all constructors of {@code classes}
+     * @param classes
+     * @return constructors
+     */
     public static List<JavaConstructor> allConstructors(Collection<JavaClass> classes) {
         return classes.stream().flatMap((jc) -> jc.getConstructors().stream())
                 .collect(ArrayList::new, List::add, List::addAll);
     }
     
+    /**
+     * Returns a flat list of all fields of {@code classes}
+     * @param classes
+     * @return fields
+     */
     public static List<JavaField> allFields(Collection<JavaClass> classes) {
         return classes.stream().flatMap((jc) -> jc.getFields().stream())
                 .collect(ArrayList::new, List::add, List::addAll);
@@ -111,14 +146,31 @@ public class QdoxTools {
 
     //<editor-fold defaultstate="collapsed" desc="Model Generators">
     
+    /**
+     * Generates a class using the default name.
+     * @param api1
+     * @return generated class
+     */
     public static GeneratedClass generatedClass(Api1 api1) {
         return api1.createClass();
     }
     
+    /**
+     * Generates a class with the given name.
+     * @param api1
+     * @param name
+     * @return generated class
+     */
     public static GeneratedClass generatedClass(Api1 api1, String name) {
         return api1.createClass(name);
     }
     
+    /**
+     * Generates a class with the given name and applies the closure.
+     * @param api1
+     * @param nc
+     * @return generated class
+     */
     public static GeneratedClass generatedClass(Api1 api1, NamedClosure<?> nc) {
         return generatedClass(api1, nc.getName(), nc.getClosure());
     }
@@ -131,34 +183,67 @@ public class QdoxTools {
                 .closureWithSelf(DslUtils::configureWith);
     }
     
+    /**
+     * @see #generatedClass(java.lang.Object...) 
+     */
     public static GeneratedClass generatedClass(Api1 api1, Object... args) {
         return cfgGeneratedClass(api1, args).getSingle();
     }
     
+    /**
+     * @see #generatedClasses(java.lang.Object...) 
+     */
     public static List<GeneratedClass> generatedClasses(Api1 api1, Object... args) {
         return cfgGeneratedClass(api1, args).getResult();
     }
     
+    /**
+     * Generates and initializes a class.
+     * A string argument will be the class name, 
+     * a map will be used to initialize properties,
+     * a closure will be run with the class as delegatee.
+     * @param args
+     * @return generated class.
+     */
     public static GeneratedClass generatedClass(Object... args) {
         return generatedClass(api1(), args);
     }
-    
+
+    /**
+     * Generates and initializes classes from a collection of class names.
+     * A map will be used to initialize properties,
+     * a closure will be run with each class as delegatee.
+     * @param args
+     * @return generated class.
+     */
     public static List<GeneratedClass> generatedClasses(Object... args) {
         return generatedClasses(api1(), args);
     }
     
+    /**
+     * Generates an interface.
+     * @see #generatedClass(org.cthul.api4j.api1.Api1) 
+     */
     public static GeneratedClass generatedInterface(Api1 api1) {
         GeneratedClass gc = generatedClass(api1);
         gc.setInterface(true);
         return gc;
     }
     
+    /**
+     * Generates an interface.
+     * @see #generatedClass(org.cthul.api4j.api1.Api1, String) 
+     */
     public static GeneratedClass generatedInterface(Api1 api1, String name) {
         GeneratedClass gc = generatedClass(api1, name);
         gc.setInterface(true);
         return gc;
     }
     
+    /**
+     * Generates an interface.
+     * @see #generatedClass(org.cthul.api4j.api1.Api1, NamedClosure) 
+     */
     public static GeneratedClass generatedInterface(Api1 api1, NamedClosure<?> nc) {
         return generatedInterface(api1, nc.getName(), nc.getClosure());
     }
@@ -171,30 +256,63 @@ public class QdoxTools {
                 .closureWithSelf(DslUtils::configureWith);
     }
     
+    /**
+     * Generates an interface.
+     * @see #generatedClass(org.cthul.api4j.api1.Api1, java.lang.Object...) 
+     */
     public static GeneratedClass generatedInterface(Api1 api1, Object... args) {
         return cfgGeneratedInterface(api1, args).getSingle();
     }
     
+    /**
+     * Generates interfaces.
+     * @see #generatedClasses(org.cthul.api4j.api1.Api1, java.lang.Object...) 
+     */
     public static List<GeneratedClass> generatedInterfaces(Api1 api1, Object... args) {
         return cfgGeneratedInterface(api1, args).getResult();
     }
     
+    /**
+     * Generates an interface.
+     * @see #generatedClass(java.lang.Object...) 
+     */
     public static GeneratedClass generatedInterface(Object... args) {
         return generatedInterface(api1(), args);
     }
     
+    /**
+     * Generates interfacees.
+     * @see #generatedClasses(java.lang.Object...) 
+     */
     public static List<GeneratedClass> generatedInterfaces(Object... args) {
         return generatedInterfaces(api1(), args);
     }
     
-    public static GeneratedClass nestedClass(DefaultJavaClass jc) {
-        return nestedClass(jc, "_");
+    /**
+     * Adds a nested class to {@code parent}.
+     * @param parent
+     * @return nested class
+     */
+    public static GeneratedClass nestedClass(DefaultJavaClass parent) {
+        return nestedClass(parent, (String) null);
     }
     
-    public static GeneratedClass nestedClass(DefaultJavaClass jc, String name) {
+    /**
+     * Adds a nested class to {@code parent}.
+     * If no name is given, a unique name will be generated.
+     * @param parent
+     * @param name
+     * @return nested class
+     */
+    public static GeneratedClass nestedClass(DefaultJavaClass parent, String name) {
+        if (name == null) {
+            int i = 0;
+            while (parent.getNestedClassByName("__" + i) != null) i++;
+            name = "__" + i;
+        }
         GeneratedClass gc = new GeneratedClass(name);
-        jc.addClass(gc);
-        gc.setParentClass(jc);
+        parent.addClass(gc);
+        gc.setParentClass(parent);
         return gc;
     }
     
@@ -206,26 +324,50 @@ public class QdoxTools {
                 .closureWithSelf(DslUtils::configureWith);
     }
     
-    public static GeneratedClass nestedClass(DefaultJavaClass jc, Object... args) {
-        return cfgNestedClass(jc, args).getSingle();
+    /**
+     * Generates a nested class.
+     * @param parent
+     * @param args
+     * @return nested class
+     * @see #generatedClass(java.lang.Object...) 
+     */
+    public static GeneratedClass nestedClass(DefaultJavaClass parent, Object... args) {
+        return cfgNestedClass(parent, args).getSingle();
     }
     
-    public static List<GeneratedClass> nestedClasses(DefaultJavaClass jc, Object... args) {
-        return cfgNestedClass(jc, args).getResult();
+    /**
+     * Generates nested classes from templates.
+     * @param parent
+     * @param args
+     * @return nested classes
+     * @see #generatedClasses(java.lang.Object...) 
+     */
+    public static List<GeneratedClass> nestedClasses(DefaultJavaClass parent, Object... args) {
+        return cfgNestedClass(parent, args).getResult();
     }
     
-    public static GeneratedClass nestedInterface(DefaultJavaClass jc) {
-        GeneratedClass gc = nestedClass(jc);
+    /**
+     * Generates a nested interface.
+     * @param parent
+     * @return nested interface
+     */
+    public static GeneratedClass nestedInterface(DefaultJavaClass parent) {
+        GeneratedClass gc = nestedClass(parent);
         gc.setInterface(true);
         return gc;
     }
     
-    public static GeneratedClass nestedInterface(DefaultJavaClass jc, String name) {
-        GeneratedClass gc = nestedClass(jc, name);
+    /**
+     * Generates a nested interface.
+     * @param parent
+     * @param name
+     * @return nested interface
+     */
+    public static GeneratedClass nestedInterface(DefaultJavaClass parent, String name) {
+        GeneratedClass gc = nestedClass(parent, name);
         gc.setInterface(true);
         return gc;
     }
-    
     
     private static MultiConfigFluent<GeneratedClass> cfgNestedInterface(DefaultJavaClass jc, Object... args) {
         return new ConfigArgs<>(String.class, args)
@@ -235,14 +377,33 @@ public class QdoxTools {
                 .closureWithSelf(DslUtils::configureWith);
     }
     
-    public static GeneratedClass nestedInterface(DefaultJavaClass jc, Object... args) {
-        return cfgNestedInterface(jc, args).getSingle();
+    /**
+     * Generates a nested interface.
+     * @param parent
+     * @param args
+     * @return nested interface
+     * @see #generatedClass(java.lang.Object...) 
+     */
+    public static GeneratedClass nestedInterface(DefaultJavaClass parent, Object... args) {
+        return cfgNestedInterface(parent, args).getSingle();
     }
     
+    /**
+     * Generates nested interfaces from templates.
+     * @param jc
+     * @param args
+     * @return nested interfaces
+     * @see #generatedClasses(java.lang.Object...) 
+     */
     public static List<GeneratedClass> nestedInterfacees(DefaultJavaClass jc, Object... args) {
         return cfgNestedInterface(jc, args).getResult();
     }
     
+    /**
+     * Adds a field to the class.
+     * @param jc
+     * @return generated field
+     */
     public static DefaultJavaField field(JavaClass jc) {
         DefaultJavaField newField = new DefaultJavaField();
         newField.setModifiers(new ModifierList());
@@ -251,6 +412,12 @@ public class QdoxTools {
         return newField;
     }
     
+    /**
+     * Adds a field to the class.
+     * @param jc
+     * @param declaration
+     * @return generated field
+     */
     public static DefaultJavaField field(JavaClass jc, String declaration) {
         DefaultJavaField newField = field(jc);
         setDeclaration(newField, declaration);
@@ -265,10 +432,25 @@ public class QdoxTools {
                 .closureWithSelf(DslUtils::configureWith);
     }
     
+    /**
+     * Adds a field to the class.
+     * A string argument will be the field's declaration, 
+     * a map will be used to initialize properties,
+     * a closure will be run with the field as delegatee.
+     * @param jc
+     * @param args
+     * @return generated field
+     */
     public static DefaultJavaField field(JavaClass jc, Object... args) {
         return cfgField(jc, args).getSingle();
     }
     
+    /**
+     * Adds fields to the class from a collection of field declaration strings.
+     * @param jc
+     * @param args
+     * @return generated fields
+     */
     public static List<DefaultJavaField> fields(JavaClass jc, Object... args) {
         return cfgField(jc, args).getResult();
     }
@@ -287,9 +469,21 @@ public class QdoxTools {
         return gc;
     }
     
+    private static GeneratedConstructor cfgNewConstructor(JavaClass jc, Object o) {
+        if (o instanceof JavaMethod) {
+            return constructor(jc, (JavaMethod) o);
+        } else if(o instanceof String) {
+            GeneratedConstructor gc = constructor(jc);
+            setDeclaration(gc, (String) o);
+            return gc;
+        } else {
+            throw new IllegalArgumentException("" + o);
+        }
+    }
+    
     private static MultiConfigFluent<GeneratedConstructor> cfgConstructor(JavaClass jc, Object... args) {
         return new ConfigArgs<>(JavaMethod.class, args)
-                .all(() -> constructor(jc), (jm) -> constructor(jc, jm))
+                .all(() -> constructor(jc), (Object jm) -> cfgNewConstructor(jc, jm))
                 .withString(QdoxTools::setDeclaration)
                 .withProperties(QdoxTools::constructorProperties)
                 .closureWithTemplate(DslUtils::configureWith);
@@ -316,9 +510,21 @@ public class QdoxTools {
         return gm;
     }
     
+    private static GeneratedMethod cfgNewMethod(JavaClass jc, Object o) {
+        if (o instanceof JavaMethod) {
+            return method(jc, (JavaMethod) o);
+        } else if(o instanceof String) {
+            GeneratedMethod gm = method(jc);
+            setDeclaration(gm, (String) o);
+            return gm;
+        } else {
+            throw new IllegalArgumentException("" + o);
+        }
+    }
+    
     private static MultiConfigFluent<GeneratedMethod> cfgMethod(JavaClass jc, Object... args) {
         return new ConfigArgs<>(JavaMethod.class, args)
-                .all(() -> method(jc), (jm) -> method(jc, jm))
+                .all(() -> method(jc), (Object jm) -> cfgNewMethod(jc, jm))
                 .withString(QdoxTools::setDeclaration)
                 .withProperties(QdoxTools::methodProperties)
                 .closureWithTemplate(DslUtils::configureWith);
@@ -397,13 +603,23 @@ public class QdoxTools {
     
     //<editor-fold defaultstate="collapsed" desc="Special Setters">
     
-    public static void classProperties(GeneratedClass field, Map<String, Object> properties) {
-        new PropertyFluent<>(field, properties)
+    /**
+     * Applies a map of properties to a class.
+     * @param clazz
+     * @param properties 
+     */
+    public static void classProperties(GeneratedClass clazz, Map<String, Object> properties) {
+        new PropertyFluent<>(clazz, properties)
                 .property("declaration", QdoxTools::setDeclaration)
                 .property("modifiers", QdoxTools::setModifiers)
                 .remaining(DslUtils::applyProperties);
     }
     
+    /**
+     * Applies a map of properties to a field.
+     * @param field
+     * @param properties 
+     */
     public static void fieldProperties(DefaultJavaField field, Map<String, Object> properties) {
         new PropertyFluent<>(field, properties)
                 .property("declaration", QdoxTools::setDeclaration)
@@ -419,6 +635,11 @@ public class QdoxTools {
                 .remaining(DslUtils::applyProperties);
     }
     
+    /**
+     * Applies a map of properties to a method.
+     * @param meth
+     * @param properties 
+     */
     public static void methodProperties(DefaultJavaMethod meth, Map<String, Object> properties) {
         new PropertyFluent<>(meth, properties)
                 .property("declaration", QdoxTools::setDeclaration)
@@ -472,7 +693,14 @@ public class QdoxTools {
                 .property("returns", QdoxTools::setReturns)
                 .remaining(DslUtils::applyProperties);
     }
-    
+
+    /**
+     * Sets the declaration of a method, constructor, or field.
+     * The string may contain modifiers, the name, the type for methods and fields,
+     * and the signature for methods and constructors.
+     * @param entity
+     * @param decl 
+     */
     public static void setDeclaration(JavaModel entity, String decl) {
         int iOpen = decl.indexOf('(');
         if (iOpen > -1) {
@@ -485,17 +713,25 @@ public class QdoxTools {
         int iSpace = decl.length();
         if (!(entity instanceof JavaConstructor) && (entity instanceof AbstractJavaEntity)) {
             iSpace = decl.lastIndexOf(' ');
-            ((AbstractJavaEntity) entity).setName(decl.substring(iSpace+1));
-            if (iSpace > 0) {
-                int end = iSpace;
-                iSpace = decl.lastIndexOf(' ', iSpace-1);
-                if (end - iSpace - 1> 0) {
-                    if (entity instanceof DefaultJavaField) {
-                        setType((DefaultJavaField) entity, decl.substring(iSpace+1, end));
-                    } else if (entity instanceof DefaultJavaMethod) {
-                        setReturns((DefaultJavaMethod) entity, decl.substring(iSpace+1, end));
-                    } else {
-                        throw new IllegalArgumentException("Can't set type of " + entity);
+            String name = decl.substring(iSpace+1);
+            if (isModifier(name)) {
+                iSpace += name.length()+1;
+            } else {
+                ((AbstractJavaEntity) entity).setName(name);
+                if (iSpace > 0) {
+                    int end = iSpace;
+                    iSpace = decl.lastIndexOf(' ', iSpace-1);
+                    if (end - iSpace - 1 > 0) {
+                        name = decl.substring(iSpace+1, end);
+                        if (isModifier(name)) {
+                            iSpace = end;
+                        } else if (entity instanceof DefaultJavaField) {
+                            setType((DefaultJavaField) entity, name);
+                        } else if (entity instanceof DefaultJavaMethod) {
+                            setReturns((DefaultJavaMethod) entity, name);
+                        } else {
+                            throw new IllegalArgumentException("Can't set type of " + entity);
+                        }
                     }
                 }
             }
@@ -521,6 +757,10 @@ public class QdoxTools {
     
     public static void setModifier(JavaModel jm, String modifiers) {
         setModifiers(jm, modifiers);
+    }
+    
+    public static boolean isModifier(String s) {
+        return ModifierList.isModifier(s);
     }
     
     public static void setSignature(AbstractBaseMethod m, String string) {
@@ -702,6 +942,9 @@ public class QdoxTools {
                         List<JavaType> bounds = v.getBounds();
                         if (bounds == null || bounds.isEmpty()) sig.append("java.lang.Object");
                         else sig.append(bounds.get(0).getCanonicalName());
+                        for (int i = 0; i < ((JavaClass) jt).getDimensions(); i++) {
+                            sig.append("[]");
+                        }
                         generic = true;
                         break;
                     }
@@ -726,14 +969,29 @@ public class QdoxTools {
     
     //</editor-fold>
     
+    /**
+     * Forces a string into a list; the list should be known to support this.
+     * @param autoParsingList
+     * @param string 
+     */
     public static void add(List<?> autoParsingList, String string) {
         ((List) autoParsingList).add(string);
     }
     
+    /**
+     * Forces strings into a list; the list should be known to support this.
+     * @param autoParsingList
+     * @param string 
+     */
     public static void addAll(List<?> autoParsingList, Collection<String> string) {
         ((List) autoParsingList).addAll(string);
     }
     
+    /**
+     * Forces strings into a list; the list should be known to support this.
+     * @param autoParsingList
+     * @param string 
+     */
     public static void addAll(List<?> autoParsingList, String... string) {
         addAll(autoParsingList, Arrays.asList(string));
     }
@@ -742,6 +1000,12 @@ public class QdoxTools {
         return withArgs(jc, args.toArray());
     }
     
+    /**
+     * Adds type arguments to a java class.
+     * @param jc
+     * @param args
+     * @return java type (or java class)
+     */
     public static JavaType withArgs(JavaClass jc, Object... args) {
         if (args.length == 0) return jc;
         StringBuilder sb = new StringBuilder(jc.getCanonicalName());
@@ -757,6 +1021,20 @@ public class QdoxTools {
         return asType(sb.toString());
     }
     
+    /**
+     * Resolves the upper bound of the {@code parameterIndex}th type parameter
+     * of {@code parentType} in the {@code actualType}.
+     * 
+     * <p>Example: <pre>{@code
+     *     class ToStringFunction<T> implements Function<T, String> {}
+     * 
+     *     resolveTypeArgument(StringFunction.class, Function.class, 1) // returns ´String´
+     * }</pre>
+     * @param actualType
+     * @param parentType
+     * @param parameterIndex
+     * @return argument type
+     */
     public static JavaType resolveTypeArgument(JavaClass actualType, JavaClass parentType, int parameterIndex) {
         if (!actualType.isA(parentType)) {
             throw new IllegalArgumentException(
@@ -765,23 +1043,45 @@ public class QdoxTools {
         return resolveTypeArg(actualType, parentType, parameterIndex).getType();
     }
     
+    /**
+     * Resolves the upper bound of the {@code parameterIndex}th type parameter
+     * of {@code parentType} in the return type of {@code method}.
+     * 
+     * <p> This is different from calling {@code resolveTypeArgument(method.getReturns(), ...)},
+     * for this method also considers the type parameters of {@code method}.
+     * 
+     * <p>Example: <pre>{@code
+     *     
+     *     public <T extends Number> Function<String, T> parser() { ... }
+     * 
+     *     JavaMethod mParser = // ´#parser()´
+     *     resolveTypeArgument(mParser, Function.class, 1) // returns ´Number´
+     * }</pre>
+     * @param method
+     * @param parentType
+     * @param parameterIndex
+     * @return 
+     */
     public static JavaType resolveReturnTypeArgument(JavaMethod method, JavaClass parentType, int parameterIndex) {
         JavaClass actualType = method.getReturns();
         if (!actualType.isA(parentType)) {
             throw new IllegalArgumentException(
                     actualType + " is not a " + parentType);
         } 
-        ArgResolvingResult result = resolveTypeArg(actualType, parentType, parameterIndex);
+        TypeArgument result = resolveTypeArg(actualType, parentType, parameterIndex);
         return result.resolve(method).getType();
     }
     
-    private static ArgResolvingResult resolveTypeArg(JavaClass actualType, JavaClass parentType, int parameterIndex) {
+    private static TypeArgument resolveTypeArg(JavaClass actualType, JavaClass parentType, int parameterIndex) {
         if (actualType.getFullyQualifiedName().equals(parentType.getFullyQualifiedName())) {
+            // actual type is parent type,
+            // just look up the parameter at index
             DefaultJavaParameterizedType jp = (DefaultJavaParameterizedType) actualType;
             JavaType t = jp.getActualTypeArguments().get(parameterIndex);
-            return new ArgResolvingResult(t);
+            return new TypeArgument(t);
         } else {
-            ArgResolvingResult r = null;
+            // first, try to resolve in super class or interface
+            TypeArgument r = null;
             JavaClass sup = actualType.getSuperJavaClass();
             if (sup != null && sup.isA(parentType)) {
                 r = resolveTypeArg(sup, parentType, parameterIndex);
@@ -794,17 +1094,28 @@ public class QdoxTools {
                     }
                 }
             }
-            if (r == null) return new ArgResolvingResult(asClass("java.lang.Object"));
+            if (r == null) {
+                // if nothing found, it cannot be resolved
+                return new TypeArgument(asClass("java.lang.Object"));
+            }
+            // resolve the result from super against the actual type
             return r.resolve(actualType);
         }
     }
     
-    static class ArgResolvingResult {
+    /**
+     * Represents a type argument, the result of a resolving operation.
+     */
+    static class TypeArgument {
         JavaType type;
-        public ArgResolvingResult(JavaType type) {
+        public TypeArgument(JavaType type) {
             this.type = type;
         }
 
+        /**
+         * Returns the upper bound of this type argument.
+         * @return type
+         */
         public JavaType getType() {
             String name = type.getFullyQualifiedName();
             if (name.startsWith("? extends ")) {
@@ -821,17 +1132,33 @@ public class QdoxTools {
             return type;
         }
 
-        public ArgResolvingResult resolve(JavaClass actualType) {
+        /**
+         * Resolves this type argument against a type.
+         * If this is a concrete type, return unchanged.
+         * If this is a type variable, determine the corresponding type parameter
+         * of {@code actualType}.
+         * @param actualType
+         * @return resolved type
+         */
+        public TypeArgument resolve(JavaClass actualType) {
             String name = type.getFullyQualifiedName();
             if (name.contains(".")) return this;
             int i = parameterIndex(name, actualType.getTypeParameters());
             if (i < 0) return this;
             DefaultJavaParameterizedType jp = (DefaultJavaParameterizedType) actualType;
             JavaType jt = jp.getActualTypeArguments().get(i);
-            return new ArgResolvingResult(jt);
+            return new TypeArgument(jt);
         }
 
-        private ArgResolvingResult resolve(JavaMethod method) {
+        /**
+         * Resolves this type argument against a type.
+         * If this is a concrete type, return unchanged.
+         * If this is a type variable, determine the corresponding type parameter
+         * of {@code method}.
+         * @param method
+         * @return resolved type
+         */
+        private TypeArgument resolve(JavaMethod method) {
             String name = type.getFullyQualifiedName();
             if (name.contains(".")) return this;
             int i = parameterIndex(name, method.getTypeParameters());
@@ -844,9 +1171,9 @@ public class QdoxTools {
                 bound = v.getBounds().get(0);
             }
             if (v.getName().equals("?")) {
-                return new ArgResolvingResult(bound);
+                return new TypeArgument(bound);
             }
-            return new ArgResolvingResult(asClass(v.getName() + " extends " + bound.getGenericFullyQualifiedName()));
+            return new TypeArgument(asClass(v.getName() + " extends " + bound.getGenericFullyQualifiedName()));
         }
         
         private int parameterIndex(String name, List<? extends JavaTypeVariable<?>> typeParams) {
@@ -896,7 +1223,7 @@ public class QdoxTools {
         private Class[] argTypes(Class<? super T> templateClass) {
             final Class[] argTypes = ARG_TYPES.clone();
             argTypes[I_TEMPLATE] = templateClass;
-            for (int i = 0; i < argTypes.length-1; i++) {
+            for (int i = 0; i < I_TEMPLATE; i++) {
                 if (argTypes[i].isAssignableFrom(templateClass)) {
                     argTypes[i] = Void.class;
                 }
@@ -908,6 +1235,8 @@ public class QdoxTools {
             final Class[] argTypes = argTypes(templateClass);
             List<T> moreTemplates = null;
             int templatesIndex = -1;
+//            List<String> moreStrings = null;
+//            int stringsIndex = -1;
             int[] result = new int[argTypes.length];
             Arrays.fill(result, -1);
             for (int a = 0; a < args.length; a++) {
@@ -988,7 +1317,7 @@ public class QdoxTools {
             return template != null && templates == null;
         }
         
-        public <R> MultiConfigFluent<R> all(Supplier<R> supp, Function<T, R> func) {
+        public <R> MultiConfigFluent<R> all(Supplier<R> supp, Function<? super T, R> func) {
             Collection<T> allTemplates = getTemplates();
             Stream<R> result;
             if (hasTemplates()) {

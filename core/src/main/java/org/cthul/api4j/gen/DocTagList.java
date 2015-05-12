@@ -5,7 +5,8 @@ import com.thoughtworks.qdox.model.impl.DefaultDocletTag;
 import java.util.List;
 
 /**
- *
+ * A list of doc tags.
+ * Parses strings as "NAME (' ' VALUE)?"
  */
 public class DocTagList extends AutoParsingList<DocletTag> {
     

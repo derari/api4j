@@ -118,10 +118,17 @@ public class ModifierList extends AbstractList<String> {
         return ORDER.clone();
     }
     
+    public static boolean isModifier(String s) {
+        for (String m: ORDER) {
+            if (m.equals(s)) return true;
+        }
+        return false;
+    }
+    
     private static final String[] ORDER = {
         "private", "protected", "public",
-        "abstract", "default", "static", 
-        "final",
+        "static", 
+        "abstract", "default", "final",
         "synchronized", "volatile"
     };
     

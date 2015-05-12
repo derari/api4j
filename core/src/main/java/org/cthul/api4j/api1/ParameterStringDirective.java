@@ -8,11 +8,21 @@ import java.util.*;
 import org.cthul.api4j.fm.DslDirectiveBase;
 import static org.cthul.api4j.fm.FmUtils.getValue;
 
+/**
+ * A freemarker command to generate method signatures and argument lists.
+ * Requires a "params" or "method" argument to be a JavaMethod or a list of JavaParameters,
+ * and optionally a "replace" argument as a String-String map.
+ */
 public class ParameterStringDirective extends DslDirectiveBase 
                 implements TemplateMethodModelEx, TemplateDirectiveModel {
     
+    /** Generates a list of argument names */
     public static final ParameterStringDirective ARGUMENTS = new ParameterStringDirective(true, false);
+    
+    /** Generates a list of parameter types and names */
     public static final ParameterStringDirective PARAMETERS = new ParameterStringDirective(false, false);
+    
+    /** Generates a list of parameter types */
     public static final ParameterStringDirective SIGNATURE = new ParameterStringDirective(false, true);
     
     private final boolean argumentsOnly;

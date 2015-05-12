@@ -6,6 +6,10 @@ import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.Api4JEngine;
 import org.cthul.api4j.api1.Api1;
 
+/**
+ * The context of an Api4J script.
+ * Knows the script's path and manages freemarker templates.
+ */
 public class Api4JScriptContext {
     
     private final String uri;
@@ -31,7 +35,7 @@ public class Api4JScriptContext {
         this.templates = new Templates();
     }
 
-    public Api4JScriptContext(Api4JScriptContext parent, Api4JEngine engine, String uri, URI root) {
+    protected Api4JScriptContext(Api4JScriptContext parent, Api4JEngine engine, String uri, URI root) {
         this.uri = uri;
         this.root = root;
         this.engine = engine;
@@ -45,10 +49,13 @@ public class Api4JScriptContext {
 //        this.cfg = parent.cfg;
 //        this.templates = templates;
 //    }
+    
+    @Deprecated
     public void setRecreate(boolean recreate) {
         this.recreate = recreate;
     }
 
+    @Deprecated
     public boolean isRecreate() {
         return recreate;
     }

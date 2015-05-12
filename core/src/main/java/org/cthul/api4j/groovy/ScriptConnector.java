@@ -4,7 +4,7 @@ import groovy.util.ResourceConnector;
 import groovy.util.ResourceException;
 import java.net.URLConnection;
 import org.cthul.resolve.ObjectResolver;
-import org.cthul.resolve.RRequest;
+import org.cthul.resolve.RResponse;
 import org.cthul.resolve.RResult;
 import org.cthul.resolve.ResolvingException;
 import org.cthul.resolve.ResourceResolver;
@@ -29,8 +29,8 @@ public class ScriptConnector extends ObjectResolver<URLConnection, ResourceExcep
     }
 
     @Override
-    protected URLConnection noResult(RRequest req) throws ResourceException {
-        throw new ResourceException(req.toString());
+    protected URLConnection noResult(RResponse res) throws ResourceException {
+        throw new ResourceException(res.getRequest().getUriOrId());
     }
 
     @Override

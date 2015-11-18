@@ -1,6 +1,5 @@
 package org.cthul.api4j.gen;
 
-import java.util.Collection;
 import java.util.List;
 
 public abstract class AutoParsingList<E> extends AutoParsingListBase<E> {

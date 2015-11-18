@@ -22,8 +22,7 @@ public class Api1 extends GroovyObjectSupport implements ClosureConfigurable, Au
     private Exception closeException = null;
     private final Templates templates;
 
-    public Api1(Api4JScriptContext script) {
-        
+    public Api1(Api4JScriptContext script) {    
         this.script = script;
         templates = new Templates(script.getTemplates(), true);
         initTemplates();

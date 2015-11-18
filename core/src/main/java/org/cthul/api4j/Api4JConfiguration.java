@@ -59,6 +59,10 @@ public class Api4JConfiguration {
         return rootContext;
     }
 
+    public Api4JScriptContext getContext(String uri) {
+        return getRootContext().subcontext(uri);
+    }
+
     public XmlLoader getXmlLoader() {
         return xmlLoader;
     }

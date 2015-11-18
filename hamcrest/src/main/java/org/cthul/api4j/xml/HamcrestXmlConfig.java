@@ -40,7 +40,7 @@ public class HamcrestXmlConfig implements XmlConfiguration {
             in.close();
             
             HamcrestGenerator gen = new HamcrestGenerator(classNames);
-            Api1 api1 = new Api1(cfg.getRootContext().subcontext(path));
+            Api1 api1 = new Api1(cfg.getContext(path));
             api1.run(gen::generate);
         }
     }

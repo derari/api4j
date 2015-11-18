@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * A list of elements that automatically parses strings.
+ * @param <E> item type
+ */
 public abstract class AutoParsingListBase<E> extends AbstractList<E> {
     
     public static <E, L extends AutoParsingListBase<E>> L wrap(List<E> list, Function<List<E>, L> wrapper) {
@@ -16,6 +20,7 @@ public abstract class AutoParsingListBase<E> extends AbstractList<E> {
     }
     
     private final List<E> list;
+    private Object initial = null;
 
     public AutoParsingListBase() {
         list = new ArrayList<>();
@@ -51,8 +56,17 @@ public abstract class AutoParsingListBase<E> extends AbstractList<E> {
         return plainAdd(index, e);
     }
     
+    private List<E> list() {
+        if (initial != null) {
+            Object tmp = initial;
+            initial = null;
+            smartAdd(tmp);
+        }
+        return list;
+    }
+    
     protected boolean plainAdd(int index, E element) {
-        list.add(index, element);
+        list().add(index, element);
         return true;
     }
     
@@ -67,17 +81,17 @@ public abstract class AutoParsingListBase<E> extends AbstractList<E> {
 
     @Override
     public E get(int index) {
-        return list.get(index);
+        return list().get(index);
     }
 
     @Override
     public int size() {
-        return list.size();
+        return list().size();
     }
 
     @Override
     public E remove(int index) {
-        return list.remove(index);
+        return list().remove(index);
     }
     
     public int indexOf(String s) {

@@ -3,6 +3,9 @@ package org.cthul.api4j.gen;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * A list of strings that parses (and possibly splits) the input before accepts it.
+ */
 public abstract class AutoParsingStringList extends AutoParsingListBase<String> {
 
     public AutoParsingStringList() {
@@ -12,11 +15,21 @@ public abstract class AutoParsingStringList extends AutoParsingListBase<String> 
         super(list);
     }
 
-    public boolean add(Collection<?> c) {
+    /**
+     * Adds each item to the list, parsing string and flattening arrays and iterables.
+     * @param c
+     * @return true
+     */
+    public boolean addAll(Iterable<?> c) {
         return smartAdd(c);
     }
 
-    public boolean add(Object[] o) {
+    /**
+     * Adds each item to the list, parsing string and flattening arrays and iterables.
+     * @param o
+     * @return true
+     */
+    public boolean addAll(Object... o) {
         return smartAdd(o);
     }
 }

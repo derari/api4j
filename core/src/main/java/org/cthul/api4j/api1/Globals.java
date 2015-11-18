@@ -4,6 +4,9 @@ import java.util.Stack;
 import java.util.function.Supplier;
 import org.cthul.objects.instance.InstanceMap;
 
+/**
+ * Manages global variables with support for nested contexts.
+ */
 public class Globals {
     
     private static final ThreadLocal<Stack<GlobalInstanceMap>> globals = new ThreadLocal<Stack<GlobalInstanceMap>>(){

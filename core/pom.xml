@@ -11,7 +11,7 @@
     <artifactId>api4j-core</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Api4J Core</name>
-    <url>http://cthul.org</url>
+    <url>http://cthul.org/api4j</url>
     <description>
         Api4J Core
     </description>

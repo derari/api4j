@@ -3,6 +3,7 @@ package org.cthul.api4j.maven;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -11,6 +12,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.cthul.api4j.Api4JConfiguration;
 import org.cthul.api4j.Api4JEngine;
+import org.cthul.api4j.Launch;
 import org.cthul.resolve.ClassLoaderResourceResolver;
 import org.cthul.resolve.CompositeResolver;
 import org.cthul.resolve.FileResolver;
@@ -52,7 +54,7 @@ public class GenerateMojo extends AbstractMojo {
         project.addCompileSourceRoot(target);
         project.addTestCompileSourceRoot(target);
         if (includes.length == 1 && includes[0].equals("--default--")) {
-            includes = new String[]{"**.api.{xml,groovy}"};
+            includes = new String[]{Launch.defaultInclude()};
         }
         try {
             Path p = Paths.get(source);
@@ -63,11 +65,12 @@ public class GenerateMojo extends AbstractMojo {
     }
     
     protected Api4JConfiguration createConfiguration() {
-        File base = new File(source);
-        ResourceResolver res = new CompositeResolver(
-                new ClassLoaderResourceResolver().lookupAll(),
-                new FileResolver(base, base).lookupAll());
-        Api4JConfiguration cfg = new Api4JConfiguration(new File(target),res);
-        return cfg;
+        return Launch.createConfiguration(new File(target), Arrays.asList(Paths.get(source)));
+//        File base = new File(source);
+//        ResourceResolver res = new CompositeResolver(
+//                new ClassLoaderResourceResolver().lookupAll(),
+//                new FileResolver(base, base).lookupAll());
+//        Api4JConfiguration cfg = new Api4JConfiguration(new File(target),res);
+//        return cfg;
     }
 }

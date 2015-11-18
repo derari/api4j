@@ -15,6 +15,18 @@ import org.cthul.api4j.groovy.ClosureConfigurable;
 import org.cthul.api4j.groovy.DslUtils;
 import org.cthul.api4j.groovy.NamedClosure;
 
+/**
+ * Manages the code generation features of Api4J version {@code 1.0}.
+ * <p>
+ * Example:
+ * <pre>{@code 
+ * Api4JConfiguration cfg = ...
+ * new Api1(cfg.getContext("my/package/")).run(api -> {
+ *     GeneratedClass myClass = QdoxTools.generatedClass("MyClass");
+ *     ...
+ * });
+ * }</pre>
+ */
 public class Api1 extends GroovyObjectSupport implements ClosureConfigurable, AutoCloseable {
     
     private final Api4JScriptContext script;
@@ -131,7 +143,10 @@ public class Api1 extends GroovyObjectSupport implements ClosureConfigurable, Au
     
     public GeneratedClass createClass() {
         String uri = script.getUri();
-        int dot = uri.indexOf('.');
+        int iSlash = uri.lastIndexOf('/');
+        if (iSlash < 0) iSlash = uri.lastIndexOf('\\');
+        if (iSlash < 0) iSlash = 0;
+        int dot = uri.indexOf('.', iSlash);
         if (dot > 0) {
             return createClass(uri.substring(0, dot));
         } else {

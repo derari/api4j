@@ -15,6 +15,9 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.cthul.api4j.api.Api4JScriptContext;
 import org.cthul.api4j.groovy.DSLEngine;
 
+/**
+ * Allows to run scripts and xml configurations in a directory.
+ */
 public class Api4JEngine extends DSLEngine {
     
     private final Api4JConfiguration config;
@@ -45,18 +48,42 @@ public class Api4JEngine extends DSLEngine {
         return uri.replace('\\', '/');
     }
     
+    /**
+     * Runs a single Api4J script.
+     * @param root root uri
+     * @param script script uri, relative to root
+     * @return script result
+     */
     public Object runScript(String root, String script) {
         return runScript(URI.create(cleanUriString(root)), script);
     }
     
+    /**
+     * Runs a single Api4J script.
+     * @param root root path
+     * @param script script path, relative to root
+     * @return script result
+     */
     public Object runScript(Path root, Path script) {
         return runScript(root.toUri(), script.toString());
     }
     
+    /**
+     * Runs a single Api4J script.
+     * @param root root path
+     * @param script script uri, relative to root
+     * @return script result
+     */
     public Object runScript(Path root, String script) {
         return runScript(root, script, true);
     }
     
+    /**
+     * Runs a single Api4J script.
+     * @param root root uri
+     * @param script script uri, relative to root
+     * @return script result
+     */
     public Object runScript(URI root, String script) {
         return runScript(root, script, true);
     }
@@ -65,6 +92,13 @@ public class Api4JEngine extends DSLEngine {
         return runScript(root.toUri(), script, recreate);
     }
     
+    /**
+     * Runs a single Api4J script.
+     * @param root root uri
+     * @param script script uri, relative to root
+     * @param recreate
+     * @return script result
+     */
     public Object runScript(URI root, String script, boolean recreate) {
         script = cleanUriString(script);
         Api4JScriptContext ctx = getConfiguration().getRootContext()
@@ -74,6 +108,12 @@ public class Api4JEngine extends DSLEngine {
         return run(ctx, scriptName);
     }
     
+    /**
+     * Runs all scripts in a directory.
+     * @param dir
+     * @param include include filter
+     * @throws Exception 
+     */
     public void runFileTree(Path dir, String... include) throws Exception {
         runFileTree(dir, true, include);
     }

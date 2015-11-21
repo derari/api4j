@@ -8,10 +8,7 @@ import java.util.List;
 public class TypeParameterList<D extends JavaGenericDeclaration, V extends JavaTypeVariable<D>> extends AutoParsingList<V> {
 
     public static <D extends JavaGenericDeclaration, V extends JavaTypeVariable<D>> TypeParameterList<D, V> wrap(D owner, List<V> list) {
-        if (list instanceof TypeParameterList) {
-            return (TypeParameterList<D, V>) list;
-        }
-        return wrap(list, l -> new TypeParameterList<>(owner, l));
+        return wrap(list, TypeParameterList.class, l -> new TypeParameterList<>(owner, l));
     }
     
     private final D owner;
@@ -25,10 +22,6 @@ public class TypeParameterList<D extends JavaGenericDeclaration, V extends JavaT
         this.owner = owner;
     }
     
-    public boolean add(String name) {
-        return add(parse(name));
-    }
-
     @Override
     protected V parse(String name) {
         return (V) new DefaultJavaTypeVariable<>(name, owner);

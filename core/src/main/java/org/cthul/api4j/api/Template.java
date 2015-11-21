@@ -8,6 +8,10 @@ public interface Template {
     
     SelfGenerating generate(Map<String, Object> map);
     
+    default SelfGenerating generate(String key, Object value) {
+        return with(key, value).generate();
+    }
+    
     default WithArgs with(String key, Object value) {
         return withArgs().put(key, value);
     }
@@ -43,7 +47,12 @@ public interface Template {
             }
             @Override
             public String toString() {
-                return Template.this.toString() + map;
+//                String s = "";
+//                try {
+//                    s = map.toString();
+//                } catch (RuntimeException e) {}
+//                return Template.this.toString() + s;
+                return generate().toString();
             }
         };
     }

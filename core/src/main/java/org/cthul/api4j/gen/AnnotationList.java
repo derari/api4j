@@ -13,10 +13,7 @@ import org.cthul.api4j.api1.QdoxTools;
 public class AnnotationList extends AutoParsingList<JavaAnnotation> {
     
     public static AnnotationList wrap(List<JavaAnnotation> list) {
-        if (list instanceof AnnotationList) {
-            return (AnnotationList) list;
-        }
-        return wrap(list, AnnotationList::new);
+        return wrap(list, AnnotationList.class, AnnotationList::new);
     }
 
     private JavaProjectBuilder qdox;

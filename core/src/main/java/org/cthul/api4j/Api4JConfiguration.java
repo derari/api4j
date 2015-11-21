@@ -93,10 +93,6 @@ public class Api4JConfiguration {
         return getRootContext().subcontext(uri);
     }
 
-    public Api4JScriptContext getContext(String uri) {
-        return getRootContext().subcontext(uri);
-    }
-
     /**
      * Returns the loader that executes xml configurations.
      * @return xml loader

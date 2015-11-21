@@ -78,6 +78,10 @@ public class GeneratedMethod extends DefaultJavaMethod {
         QdoxTools.setBody(this, body);
     }
     
+    public void setBody(String body, Object... args) {
+        QdoxTools.setBody(this, body, args);
+    }
+    
     @Override
     public TypeParameterList<JavaMethod, JavaTypeVariable<JavaMethod>> getTypeParameters() {
         return TypeParameterList.wrap(this, super.getTypeParameters());
@@ -91,6 +95,11 @@ public class GeneratedMethod extends DefaultJavaMethod {
     @Override
     public AnnotationList getAnnotations() {
         return AnnotationList.wrap(super.getAnnotations());
+    }
+
+    @Override
+    public ModifierList getModifiers() {
+        return (ModifierList) super.getModifiers();
     }
     
     static void injectParameters(AbstractBaseMethod m, List<JavaParameter> params) {

@@ -140,9 +140,9 @@ public class Launch {
     public static Api4JConfiguration createConfiguration(File target, List<Path> scripts) {
         List<ResourceResolver> resolvers = new ArrayList<>(scripts.size()+1);
         resolvers.add(new ClassLoaderResourceResolver().lookupAll());
-        for (Path p: scripts) {
+        scripts.forEach(p -> {
             resolvers.add(new FileResolver(p, p).lookupAll());
-        }
+        });
         ResourceResolver res = new CompositeResolver(resolvers);
         Api4JConfiguration cfg = new Api4JConfiguration(target, res);
         return cfg;

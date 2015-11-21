@@ -11,10 +11,7 @@ import java.util.List;
 public class DocTagList extends AutoParsingList<DocletTag> {
     
     public static DocTagList wrap(List<DocletTag> list) {
-        if (list instanceof DocTagList) {
-            return (DocTagList) list;
-        }
-        return wrap(list, DocTagList::new);
+        return wrap(list, DocTagList.class, DocTagList::new);
     }
 
     private final boolean removeReturnTags;

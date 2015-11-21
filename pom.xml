@@ -295,12 +295,12 @@
             <dependency>
                 <groupId>org.cthul</groupId>
                 <artifactId>cthul-xml</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2</version>
             </dependency>
             <dependency>
                 <groupId>org.cthul</groupId>
                 <artifactId>cthul-objects</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>1.2</version>
             </dependency>
             <dependency>
                 <groupId>org.cthul</groupId>

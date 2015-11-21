@@ -23,24 +23,6 @@ public abstract class AutoParsingList<E> extends AutoParsingListBase<E> {
     public boolean add(String e) {
         return smartAdd(e);
     }
-
-    /**
-     * Adds each item to the list, parsing strings and flattening arrays and iterables.
-     * @param c
-     * @return true
-     */
-    public boolean addAll(Iterable<?> c) {
-        return smartAdd(c);
-    }
-
-    /**
-     * Adds each item to the list, parsing strings and flattening arrays and iterables.
-     * @param o
-     * @return true
-     */
-    public boolean addAll(Object... o) {
-        return smartAdd(o);
-    }
     
     /**
      * Adds each item to the list, parsing each string.

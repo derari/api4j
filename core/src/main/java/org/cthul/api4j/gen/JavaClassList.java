@@ -13,10 +13,7 @@ public class JavaClassList extends AutoParsingList<JavaClass> {
     }
     
     public static JavaClassList wrap(JavaProjectBuilder qdox, List<JavaClass> list) {
-        if (list instanceof JavaClassList) {
-            return (JavaClassList) list;
-        }
-        return wrap(list, l -> new JavaClassList(qdox, l));
+        return wrap(list, JavaClassList.class, l -> new JavaClassList(qdox, l));
     }
     
     final JavaProjectBuilder qdox;

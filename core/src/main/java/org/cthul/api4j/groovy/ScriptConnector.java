@@ -27,8 +27,7 @@ public class ScriptConnector extends ObjectResolver<URLConnection, ResourceExcep
             throw new ResourceException(e.getMessage(), e.getResolvingCause());
         }
     }
-
-    @Override
+    
     protected URLConnection noResult(RResponse res) throws ResourceException {
         throw new ResourceException(res.getRequest().getUriOrId());
     }

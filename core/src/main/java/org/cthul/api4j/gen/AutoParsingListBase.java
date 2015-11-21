@@ -3,6 +3,7 @@ package org.cthul.api4j.gen;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
@@ -12,10 +13,10 @@ import java.util.function.Function;
  */
 public abstract class AutoParsingListBase<E> extends AbstractList<E> {
     
-    public static <E, L extends AutoParsingListBase<E>> L wrap(List<E> list, Function<List<E>, L> wrapper) {
-//        if (list instanceof AutoParsingListBase) {
-//            return (L) list;
-//        }
+    public static <E, L extends AutoParsingListBase<E>> L wrap(List<E> list, Class<L> clazz, Function<List<E>, L> wrapper) {
+        if (clazz.isInstance(list)) {
+            return clazz.cast(list);
+        }
         return wrapper.apply(list);
     }
     
@@ -33,10 +34,43 @@ public abstract class AutoParsingListBase<E> extends AbstractList<E> {
     protected abstract E parse(String s);
 
     @Override
+    public boolean add(E e) {
+        return smartAdd(e);
+    }
+
+    @Override
     public void add(int index, E element) {
         smartAdd(index, element);
     }
 
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        return smartAdd(c);
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends E> c) {
+        return smartAdd(index, c);
+    }
+
+    /**
+     * Adds each item to the list, parsing string and flattening arrays and iterables.
+     * @param c
+     * @return true
+     */
+    public boolean addAll(Iterable<?> c) {
+        return smartAdd(c);
+    }
+
+    /**
+     * Adds each item to the list, parsing string and flattening arrays and iterables.
+     * @param o
+     * @return true
+     */
+    public boolean addAll(Object... o) {
+        return smartAdd(o);
+    }
+    
     protected boolean smartAdd(Object o) {
         return smartAdd(size(), o);
     }
@@ -104,20 +138,35 @@ public abstract class AutoParsingListBase<E> extends AbstractList<E> {
 
     @Override
     public boolean remove(Object o) {
-        return smartRemove(o);
+        return smartRemove(false, o);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return smartRemove(true, c);
     }
     
-    protected boolean smartRemove(Object o) {
+    protected boolean smartRemove(boolean all, Object o) {
         if (o instanceof Object[]) {
             o = Arrays.asList((Object[]) o);
         }
         if (o instanceof Iterable) {
             return removeIterable((Iterable) o);
         } else if (o instanceof String) {
-            return remove((String) o);
+            return all ? removeAll((String) o) : remove((String) o);
         } else {
             return super.remove((E) o);
         }
+    }
+    
+    public boolean removeAll(String s) {
+        int i = indexOf(s);
+        if (i < 0) return false;
+        while (i >= 0) {
+            remove(i);
+            i = indexOf(s);
+        }
+        return true;
     }
     
     public boolean remove(String s) {
@@ -130,8 +179,13 @@ public abstract class AutoParsingListBase<E> extends AbstractList<E> {
     private boolean removeIterable(Iterable<?> iterable) {
         boolean change = false;
         for (Object o: iterable) {
-            change |= smartRemove(o);
+            change |= smartRemove(true, o);
         }
         return change;
+    }
+    
+    public boolean setTo(String value) {
+        clear();
+        return smartAdd(value);
     }
 }

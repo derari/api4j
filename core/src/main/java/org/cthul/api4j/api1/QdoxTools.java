@@ -922,13 +922,15 @@ public class QdoxTools {
         String name = "#" + jm.getName();
         if (!(jm instanceof ParameterDeclarator)) return name;
         List<JavaParameter> params;
-        List<? extends JavaTypeVariable<?>> vars;
+        List<JavaTypeVariable<?>> vars = new ArrayList<>();
         if (jm instanceof JavaMethod) {
             params = ((JavaMethod) jm).getParameters();
-            vars = ((JavaMethod) jm).getTypeParameters();
+            vars.addAll(((JavaMethod) jm).getTypeParameters());
+            vars.addAll(((JavaMethod) jm).getDeclaringClass().getTypeParameters());
         } else {
             params = ((JavaConstructor) jm).getParameters();
-            vars = ((JavaConstructor) jm).getTypeParameters();
+            vars.addAll(((JavaConstructor) jm).getTypeParameters());
+            vars.addAll(((JavaConstructor) jm).getDeclaringClass().getTypeParameters());
         }
         if (params.isEmpty()) return name + "()";
         StringBuilder sig = new StringBuilder(name).append('(');

@@ -9,7 +9,7 @@
     <groupId>org.cthul.api4j</groupId>
     <artifactId>api4j</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>Api4J POM</name>
     <url>http://cthul.org/</url>
     <description>

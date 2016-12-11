@@ -84,6 +84,14 @@ public class QdoxToolsTest {
         assertThat(result.getGenericFullyQualifiedName(), is("T extends java.lang.Double"));
     }
     
+    @Test
+    public void test_doc_string_with_generic_parameter() {
+        JavaClass jcInterface = QdoxTools.asClass(InterfaceWithMethod.class.getCanonicalName().replace(".I", "$I"));
+        JavaMethod jm = jcInterface.getMethods().stream().filter(f -> f.getName().equals("foo")).findFirst().get();
+        String docString = QdoxTools.getDocReference(jm);
+        assertThat(docString, is("org.cthul.api4j.api1.QdoxToolsTest.InterfaceWithMethod#foo(java.lang.Object)"));
+    }
+    
     public static TheInterface<String, Integer> method_simple1() {
         return null;
     }
@@ -104,6 +112,10 @@ public class QdoxToolsTest {
         return null;
     }
     
-    public static interface TheInterface<X, Y> {
+    public static interface TheInterface<X, Y> {        
+    }
+    
+    public static interface InterfaceWithMethod<X> {
+        void foo(X x);
     }
 }
